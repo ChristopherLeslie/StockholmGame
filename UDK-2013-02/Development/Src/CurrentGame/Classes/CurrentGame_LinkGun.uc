@@ -416,8 +416,8 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 	/*******************************/
 	//ADDED BY STEVEN
 
-	local HostagePawn hostage;
-	local CaptorPawn shooter;
+	local CurrentGame_HostagePawn hostage;
+	local CurrentGame_CaptorPawn shooter;
 	local byte shooterTeam; 
 
 	/******************************/
@@ -491,9 +491,9 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 					/***********************************/
 					//ADDED BY STEVEN
 
-					if(Victim.IsA('HostagePawn')){
-						hostage = HostagePawn(Victim);
-						shooter = CaptorPawn(Instigator);
+					if(Victim.IsA('CurrentGame_HostagePawn')){
+						hostage = CurrentGame_HostagePawn(Victim);
+						shooter = CurrentGame_CaptorPawn(Instigator);
 						shooterTeam = shooter.getTeamNum();
 						hostage.receivePersuasion(shooterTeam);
 

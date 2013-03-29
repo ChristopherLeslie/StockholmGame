@@ -3,8 +3,8 @@ class SentryController extends GameAIController;
 //declaring variables here means
 //they may be used throughout this script
 var Vector MyTarget;
-var CaptorPawn captorToFollow;
-var CaptorPawn captorToFlee;
+var CurrentGame_CaptorPawn captorToFollow;
+var CurrentGame_CaptorPawn captorToFlee;
 var Vector placeToGo;
 var Bool bIsFollowingCaptor;
 var Bool bIsFollowingOrder;
@@ -48,8 +48,8 @@ simulated event PostBeginPlay()
 
 function BrainTimer(){
 	local float distance;
-	local CaptorPawn captor;
-	local HostagePawn hostage;
+	local CurrentGame_CaptorPawn captor;
+	local CurrentGame_HostagePawn hostage;
 	local Pawn P;
 	local Vector v;
 	local float scale;
@@ -60,8 +60,8 @@ function BrainTimer(){
 	  currentPrioritizedTargetToFireAt = none;
 	  Pawn.StopFire(1);
 	  foreach WorldInfo.AllPawns(class'Pawn', P){
-		  if(P.isA('CaptorPawn')){ //Captor
-			captor = CaptorPawn(P);
+		  if(P.isA('CurrentGame_CaptorPawn')){ //Captor
+			captor = CurrentGame_CaptorPawn(P);
 			distance =  VSize2D(Pawn.Location - captor.Location);
 			if(captor.getTeamNum() == Pawn.getTeamNum()){ //Friendly Captor 
 			  
@@ -72,7 +72,7 @@ function BrainTimer(){
 			  }
 			}
 		  }
-		  else{//NOT a CaptorPawn
+		  else{//NOT a CurrentGame_CaptorPawn
 		  
 		  } 
       }

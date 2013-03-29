@@ -1,10 +1,10 @@
-class HostageController extends GameAIController;
+class CurrentGame_HostageController extends GameAIController;
 
 //declaring variables here means
 //they may be used throughout this script
 var Vector MyTarget;
-var CaptorPawn captorToFollow;
-var CaptorPawn captorToFlee;
+var CurrentGame_CaptorPawn captorToFollow;
+var CurrentGame_CaptorPawn captorToFlee;
 var Vector placeToGo;
 var Bool bIsFollowingCaptor;
 var Bool bIsFollowingOrder;
@@ -52,8 +52,8 @@ simulated event PostBeginPlay()
 
 function BrainTimer(){
   local float distance;
-  local CaptorPawn captor;
-  local HostagePawn hostage;
+  local CurrentGame_CaptorPawn captor;
+  local CurrentGame_HostagePawn hostage;
   local Pawn P;
   local Vector v;
   local float scale;
@@ -71,7 +71,7 @@ function BrainTimer(){
     switch(currentAction){
       case EHostageAction.fireAtEnemyHostage:
 
-            if(     !currentPrioritizedTargetToFireAt.isA('HostagePawn')
+            if(     !currentPrioritizedTargetToFireAt.isA('CurrentGame_HostagePawn')
                 ||   currentPrioritizedTargetToFireAt == none 
                 ||  currentPrioritizedTargetToFireAt.health <= 0){ //the target dies
               finishCurrentAction();
@@ -123,8 +123,8 @@ function BrainTimer(){
     
   
     foreach WorldInfo.AllPawns(class'Pawn', P){
-      if(P.isA('CaptorPawn')){                            //Captor
-        captor = CaptorPawn(P);
+      if(P.isA('CurrentGame_CaptorPawn')){                            //Captor
+        captor = CurrentGame_CaptorPawn(P);
         distance =  VSize2D(Pawn.Location - captor.Location);
         if(captor.getTeamNum() == Pawn.getTeamNum()){ //Friendly Captor 
           
@@ -139,9 +139,9 @@ function BrainTimer(){
           }
         }
       }
-      else{//NOT a CaptorPawn
-        if(P.isA('HostagePawn')){                         //it's a hostage
-          hostage = HostagePawn(P);
+      else{//NOT a CurrentGame_CaptorPawn
+        if(P.isA('CurrentGame_HostagePawn')){                         //it's a hostage
+          hostage = CurrentGame_HostagePawn(P);
           distance =  VSize2D(Pawn.Location - hostage.Location);
 
           if(  hostage.getTeamNum() != Pawn.getTeamNum() && distance < 400){  //it's a close enemy hostage
@@ -165,7 +165,7 @@ simulated function wander(){
   }
 }
 
-simulated function followCaptor(CaptorPawn captor){
+simulated function followCaptor(CurrentGame_CaptorPawn captor){
   local Bool beganFollowing;
   beganFollowing = addDestinationWithPriority(captor.Location, followCaptorPriority);
   if(beganFollowing){
@@ -175,7 +175,7 @@ simulated function followCaptor(CaptorPawn captor){
 
 simulated function wardCaptor(){
 	local Pawn P;
-	local CaptorPawn captor;
+	local CurrentGame_CaptorPawn captor;
 	local float distance;
 	local float zcomponent;
 	local Vector BackwardVector;
@@ -188,8 +188,8 @@ simulated function wardCaptor(){
 	local Vector unitVector;
 	local Vector notunitvector;
 	foreach WorldInfo.AllPawns(class'Pawn', P){
-      if(P.isA('CaptorPawn')){                            //Captor
-        captor = CaptorPawn(P);
+      if(P.isA('CurrentGame_CaptorPawn')){                            //Captor
+        captor = CurrentGame_CaptorPawn(P);
         distance =  VSize2D(Pawn.Location - captor.Location);
         if(captor.getTeamNum() != Pawn.getTeamNum()) //Enemy Captor 
 		{
@@ -263,7 +263,7 @@ simulated function wardCaptor(){
 	}
 }
 
-simulated function fleeCaptor(CaptorPawn captor){
+simulated function fleeCaptor(CurrentGame_CaptorPawn captor){
    local Vector dest;
    local Bool beganFleeing;
    dest = 2* Pawn.Location - captor.Location;
@@ -273,7 +273,7 @@ simulated function fleeCaptor(CaptorPawn captor){
     currentAction = EHostageAction.fleeCaptor;
    }
 }
-simulated function fireAtEnemyHostage(HostagePawn hostage){
+simulated function fireAtEnemyHostage(CurrentGame_HostagePawn hostage){
     if(addDestinationWithPriority(Pawn.Location, fireAtEnemyHostagePriority)){
         //target them
         currentPrioritizedTargetToFireAt = hostage;
@@ -318,7 +318,7 @@ simulated function bool addDestinationWithPriority(Vector theLocation, int prior
 
 
 
-function hearShot(CaptorPawn captor, Vector hitLocation){
+function hearShot(CurrentGame_CaptorPawn captor, Vector hitLocation){
   //If my Captor shot that bullet, follow it!
   local bool beganFollowingShot;
   if(captor.getTeamNum() == Pawn.getTeamNum()){
@@ -347,9 +347,9 @@ state MoveAbout{
 auto State Idle{
   event SeePlayer(Pawn SeenPlayer){
   local 
- //   local CaptorPawn captor;
-    //if(SeenPlayer.isA('CaptorPawn')){
-      //captor = CaptorPawn(SeenPlayer);
+ //   local CurrentGame_CaptorPawn captor;
+    //if(SeenPlayer.isA('CurrentGame_CaptorPawn')){
+      //captor = CurrentGame_CaptorPawn(SeenPlayer);
       if(SeenPlayer
     //}
   }

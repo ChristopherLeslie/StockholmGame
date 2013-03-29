@@ -21,8 +21,8 @@ simulated function ProcessTouch (Actor Other, vector HitLocation, vector HitNorm
 			//`log("Other: "$Other.class);
 			//`log("Instigator: "$ Instigator.class);
 
-			if(Other.isA('HostagePawn')){
-				HostagePawn(Other).shotBy(Instigator);
+			if(Other.isA('CurrentGame_HostagePawn')){
+				CurrentGame_HostagePawn(Other).shotBy(Instigator);
 			}
 			else{
 
@@ -49,16 +49,16 @@ simulated event HitWall(vector HitNormal, Actor Wall, PrimitiveComponent WallCom
 	//ADDED BY STEVEN
 
 	local Pawn P;
-	local HostagePawn hostage;
-	local CaptorPawn captor;
-	local HostageController myController;
+	local CurrentGame_HostagePawn hostage;
+	local CurrentGame_CaptorPawn captor;
+	local CurrentGame_HostageController myController;
 
-	if(Instigator.isA('CaptorPawn')){
-		captor = CaptorPawn(Instigator);
+	if(Instigator.isA('CurrentGame_CaptorPawn')){
+		captor = CurrentGame_CaptorPawn(Instigator);
 		foreach WorldInfo.AllPawns(class'Pawn', P){
-			if(P.isA('HostagePawn')){
-				hostage = HostagePawn(P);
-				myController = HostageController(hostage.Controller);
+			if(P.isA('CurrentGame_HostagePawn')){
+				hostage = CurrentGame_HostagePawn(P);
+				myController = CurrentGame_HostageController(hostage.Controller);
 				myController.hearShot(captor, Location);
 			}
 		}

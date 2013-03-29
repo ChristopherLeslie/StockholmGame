@@ -1,4 +1,4 @@
-class HostagePawn extends UTPawn; 
+class CurrentGame_HostagePawn extends UTPawn; 
 
 var int redLoyalty;
 var int blueLoyalty;

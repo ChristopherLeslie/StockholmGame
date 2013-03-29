@@ -3,8 +3,8 @@ class RemoteMineController extends GameAIController;
 //declaring variables here means
 //they may be used throughout this script
 var Vector MyTarget;
-var CaptorPawn captorToFollow;
-var CaptorPawn captorToFlee;
+var CurrentGame_CaptorPawn captorToFollow;
+var CurrentGame_CaptorPawn captorToFlee;
 var Vector placeToGo;
 var Bool bIsFollowingCaptor;
 var Bool bIsFollowingOrder;
@@ -69,11 +69,11 @@ function B2()
 function BrainTimer()
 {
 	local array<Pawn> temp_targets;
-	local CaptorPawn captor;
+	local CurrentGame_CaptorPawn captor;
 	local Pawn P;
 	foreach WorldInfo.AllPawns(class'Pawn', P){
-		if(P.isA('CaptorPawn')){ //Captor
-			captor = CaptorPawn(P);
+		if(P.isA('CurrentGame_CaptorPawn')){ //Captor
+			captor = CurrentGame_CaptorPawn(P);
 			if(captor.getTeamNum() != Pawn.getTeamNum()){ //Ememy Captor
 				temp_targets.AddItem(P);
 			}

@@ -1,4 +1,4 @@
-class CaptorController extends UTPlayerController;
+class CurrentGame_CaptorController extends UTPlayerController;
 
 var class<UTFamilyInfo> CharacterClass;
 var MaterialInterface defaultMaterial0; //for some reason necessary for setting the materials later even though I don't ever define what the defaultMaterial0 is
@@ -18,7 +18,7 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 	Super.Possess(inPawn, bVehicleTransition);
 	
-	//Set the pawn that CaptorController is controlling to look like a human
+	//Set the pawn that CurrentGame_CaptorController is controlling to look like a human
 	inPawn.Mesh.SetSkeletalMesh(SkeletalMesh'CH_IronGuard_Male.Mesh.SK_CH_IronGuard_MaleA');
 	//A lot of textures are missing if we don't do this step
 	//but it functions the same and looks like a crappy human

@@ -3,8 +3,8 @@ class WardController extends GameAIController;
 //declaring variables here means
 //they may be used throughout this script
 var Vector MyTarget;
-var CaptorPawn captorToFollow;
-var CaptorPawn captorToFlee;
+var CurrentGame_CaptorPawn captorToFollow;
+var CurrentGame_CaptorPawn captorToFlee;
 var Vector placeToGo;
 var Bool bIsFollowingCaptor;
 var Bool bIsFollowingOrder;
@@ -35,7 +35,7 @@ simulated event PostBeginPlay()
 
 function WardTimer(){
 	local Pawn P;
-	local CaptorPawn captor;
+	local CurrentGame_CaptorPawn captor;
 	local float distance;
 	local float zcomponent;
 	local Vector BackwardVector;
@@ -48,8 +48,8 @@ function WardTimer(){
 	local Vector unitVector;
 	local Vector notunitvector;
 	foreach WorldInfo.AllPawns(class'Pawn', P){
-      if(P.isA('CaptorPawn')){                            //Captor
-        captor = CaptorPawn(P);
+      if(P.isA('CurrentGame_CaptorPawn')){                            //Captor
+        captor = CurrentGame_CaptorPawn(P);
         distance =  VSize2D(Pawn.Location - captor.Location);
         if(captor.getTeamNum() != Pawn.getTeamNum()) //Enemy Captor 
 		{

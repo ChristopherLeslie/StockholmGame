@@ -2,6 +2,6 @@ class CurrentGame extends UTDeathmatch;
 
 defaultproperties
 {
-    PlayerControllerClass=class'CaptorController'
-	DefaultPawnClass=class'CaptorPawn'
+    PlayerControllerClass=class'CurrentGame_CaptorController'
+	DefaultPawnClass=class'CurrentGame_CaptorPawn'
 }

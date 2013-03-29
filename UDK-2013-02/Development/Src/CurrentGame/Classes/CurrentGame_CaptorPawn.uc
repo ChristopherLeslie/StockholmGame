@@ -1,4 +1,4 @@
-class CaptorPawn extends UTPawn;
+class CurrentGame_CaptorPawn extends UTPawn;
 
 var float ElapsedRegenTime;
 var float RegenAmount;

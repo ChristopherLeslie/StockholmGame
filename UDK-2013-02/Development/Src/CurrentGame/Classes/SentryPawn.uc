@@ -18,7 +18,7 @@ var MaterialInterface defaultMaterial0;
 
 simulated event PostBeginPlay()
 {
-  setDrawScale(1.0f);
+  //setDrawScale(1.0f);
   `log("hello, I'm a bot");
    Super.PostBeginPlay();
 }
@@ -76,7 +76,7 @@ simulated function switchToTeam(byte team_number){
 }
 simulated function shotBy(Pawn antagonist){
 	if(antagonist.isA('CaptorPawn')){
-		setDrawScale(0.5f + (blueLoyalty / 10.0f));
+		//setDrawScale(0.5f + (blueLoyalty / 10.0f));
 		`log("i got shot by a captor!");
 	}
 }
@@ -144,4 +144,38 @@ defaultproperties
  teamNum = 255
  loyaltyRate = 2.0f
 
+Begin Object Class=SkeletalMeshComponent Name=WYYPawnSkeletalMeshComponent
+       //Your Mesh Properties
+      SkeletalMesh=SkeletalMesh'CH_LIAM_Cathode.Mesh.SK_CH_LIAM_Cathode'
+      AnimTreeTemplate=AnimTree'CH_AnimHuman_Tree.AT_CH_Human'
+      PhysicsAsset=PhysicsAsset'CH_AnimCorrupt.Mesh.SK_CH_Corrupt_Male_Physics'
+      AnimSets(0)=AnimSet'CH_AnimHuman.Anims.K_AnimHuman_BaseMale'
+      Translation=(Z=8.0)
+      Scale=1.075
+      //General Mesh Properties
+      bCacheAnimSequenceNodes=FALSE
+      AlwaysLoadOnClient=true
+      AlwaysLoadOnServer=true
+      bOwnerNoSee=false
+      CastShadow=true
+      BlockRigidBody=TRUE
+      bUpdateSkelWhenNotRendered=false
+      bIgnoreControllersWhenNotRendered=TRUE
+      bUpdateKinematicBonesFromAnimation=true
+      bCastDynamicShadow=true
+      RBChannel=RBCC_Untitled3
+      RBCollideWithChannels=(Untitled3=true)
+      LightEnvironment=MyLightEnvironment
+      bOverrideAttachmentOwnerVisibility=true
+      bAcceptsDynamicDecals=FALSE
+      bHasPhysicsAssetInstance=true
+      TickGroup=TG_PreAsyncWork
+      MinDistFactorForKinematicUpdate=0.2
+      bChartDistanceFactor=true
+      RBDominanceGroup=20
+      bUseOnePassLightingOnTranslucency=TRUE
+      bPerBoneMotionBlur=true
+   End Object
+   Mesh=WYYPawnSkeletalMeshComponent
+   Components.Add(WYYPawnSkeletalMeshComponent)
 }
