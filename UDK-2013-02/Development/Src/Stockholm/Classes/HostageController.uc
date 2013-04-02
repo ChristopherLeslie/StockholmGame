@@ -72,10 +72,69 @@ auto State Begin{
 }
 
 
+function GoToWard(){
+	goToState('Ward');
+}
 
 
-
-
+State Ward{
+	local float distance;
+	local CaptorPawn captor;
+	local HostagePawn hostage;
+	local Pawn P;
+	local Vector v;
+	local float scale;
+	local float sleep_time;
+	local Pawn currentPrioritizedTargetToFireAtSentry;
+	Begin:
+		if(currentPrioritizedTargetToFireAtSentry == none 
+		   ||  currentPrioritizedTargetToFireAtSentry.health <= 0)
+		{
+		  `log("Looking for a target");
+		  Pawn.StopFire(0);
+		  Pawn.StopFire(1);
+		  currentPrioritizedTargetToFireAtSentry = none;
+		  Pawn.StopFire(1);
+		  foreach WorldInfo.AllPawns(class'Pawn', P){
+			  if(P.isA('CaptorPawn')){ //Captor
+				captor = CaptorPawn(P);
+				distance =  VSize2D(Pawn.Location - captor.Location);
+				if(captor.getTeamNum() == Pawn.getTeamNum()){ //Friendly Captor 
+				  if(distance < 400){
+					currentPrioritizedTargetToFireAtSentry = captor;
+				  }
+				}
+				else{                         //Enemy Captor
+				  if(distance < 400){
+					currentPrioritizedTargetToFireAtSentry = captor;
+				  }
+				}
+			  }
+			  else{//NOT a CurrentGame_CaptorPawn
+			  
+			  } 
+		  }
+		  sleep_time=0.1;
+		}
+		else
+		{
+			`log("Priority target:"$currentPrioritizedTargetToFireAtSentry);
+			Pawn.LockDesiredRotation(false,false);
+			Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAtSentry.Location - Pawn.Location),true,true,0.25);
+			distance =  VSize2D(currentPrioritizedTargetToFireAtSentry.Location - Pawn.Location);
+			Pawn.StartFire(1);
+			if(distance > 1500)
+			{
+				currentPrioritizedTargetToFireAtSentry = none;
+				Pawn.StopFire(0);
+				Pawn.StopFire(1);
+				goToState('Roaming');
+			}
+			sleep_time = 0.03;
+		}
+		sleep(sleep_time);
+		goTo('Begin');
+}
 
 
 
