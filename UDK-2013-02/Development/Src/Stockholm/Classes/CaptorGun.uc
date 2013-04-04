@@ -92,7 +92,7 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 							hostageP = HostagePawn(Victim);
 							captorP = CaptorPawn(Instigator);
 							
-							hostageP.receivePersuasion(captorP.getTeamNum());
+							hostageP.receivePersuasion(captorP);
 
 						}
 						Victim.TakeDamage(DamageAmount, Instigator.Controller, TestImpact.HitLocation, PushForce, InstantHitDamageTypes[1], TestImpact.HitInfo, self);

@@ -1,8 +1,11 @@
 class HostagePawn extends StockholmPawn; 
 
 
-//var float ElapsedLoyaltyTime;
-//var float loyaltyRate;
+var float ElapsedTime;
+
+var CaptorPawn captorCapturingMe;
+
+var CaptorPawn myCaptor;
 
 var MaterialInterface defaultMaterial0;
 
@@ -15,19 +18,33 @@ simulated event PostBeginPlay()
 }
 
 
-
-
-
-
-
-
-
-
-
-simulated function receivePersuasion(byte team_number){
+event Tick(float DeltaTime)
+{
   
-  increaseLoyalty(team_number);
+  //calculate elapsed time
+  ElapsedTime += DeltaTime;
+   
+  //has enough time elapsed?
+  if(ElapsedTime >= 0.1)
+  {
 
+        //DrawDebugLine(Location,Location+400*normal(vector(Rotation)),255,0,0,true);
+
+    
+  }
+}
+
+
+
+
+
+
+
+
+simulated function receivePersuasion(CaptorPawn captor){
+  
+  increaseLoyalty(captor.getTeamNum());
+  captorCapturingMe = captor;
   `log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
 }
 
@@ -35,6 +52,8 @@ simulated function switchToTeam(byte team_number){
   local StockholmGame game;
 
   game = StockholmGame(WorldInfo.Game);
+  myCaptor = captorCapturingMe;
+  HostageController(Controller).myCaptor = captorCapturingMe;
 
   if(team_number == game.redTeamNum){
     `log("I've switched to the red team.");
@@ -132,4 +151,6 @@ defaultproperties
  blueLoyalty = 0
  maxLoyalty = 20
  teamNum = 255
+
+ sightRadius = 1400;
 }

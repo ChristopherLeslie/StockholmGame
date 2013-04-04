@@ -3,8 +3,9 @@ class HostageController extends GameAIController;
 //declaring variables here means
 //they may be used throughout this script
 
-var CaptorPawn captorToFollow;
-var CaptorPawn captorToFlee;
+
+var Pawn pawnImThinkingAbout;
+var Pawn myCaptor;
 
 var Bool bIsFollowingCaptor;
 var Bool bIsFollowingOrder;
@@ -32,13 +33,8 @@ simulated event PostBeginPlay()
 {
   super.PostBeginPlay();
 
-  //start the brain going at half second intervals
-  //Pawn.Groundspeed = 100;
-  //wander();
-  //SetTimer(0.5, true, 'BrainTimer');
-  //preferredDestination = Spawn(class'ActorWaypoint');
+
   Pawn.bAvoidLedges=true;
-  Pawn.sightRadius = 2000;
 }
 
 function LookAt(Actor a){
@@ -66,75 +62,34 @@ function stopMoving(){
   bPreciseDestination = false;
 }
 
+function int distTo(Actor other){
+  return VSize2D(Pawn.Location-other.Location);
+}
+
+
+function reactToSeeingAPlayer(Pawn seen){
+  if(seen.isA('HostagePawn')){
+    //Saw another hostage
+    return;
+  }
+  else if(seen.isA('CaptorPawn')){
+    //Saw a captor
+  }
+  
+}
+
+
+
 auto State Begin{
   Begin:
   goToState('Roaming');
 }
 
 
-function GoToWard(){
-	goToState('Ward');
-}
 
 
-State Ward{
-	local float distance;
-	local CaptorPawn captor;
-	local HostagePawn hostage;
-	local Pawn P;
-	local Vector v;
-	local float scale;
-	local float sleep_time;
-	local Pawn currentPrioritizedTargetToFireAtSentry;
-	Begin:
-		if(currentPrioritizedTargetToFireAtSentry == none 
-		   ||  currentPrioritizedTargetToFireAtSentry.health <= 0)
-		{
-		  `log("Looking for a target");
-		  Pawn.StopFire(0);
-		  Pawn.StopFire(1);
-		  currentPrioritizedTargetToFireAtSentry = none;
-		  Pawn.StopFire(1);
-		  foreach WorldInfo.AllPawns(class'Pawn', P){
-			  if(P.isA('CaptorPawn')){ //Captor
-				captor = CaptorPawn(P);
-				distance =  VSize2D(Pawn.Location - captor.Location);
-				if(captor.getTeamNum() == Pawn.getTeamNum()){ //Friendly Captor 
-				  if(distance < 400){
-					currentPrioritizedTargetToFireAtSentry = captor;
-				  }
-				}
-				else{                         //Enemy Captor
-				  if(distance < 400){
-					currentPrioritizedTargetToFireAtSentry = captor;
-				  }
-				}
-			  }
-			  else{//NOT a CurrentGame_CaptorPawn
-			  
-			  } 
-		  }
-		  sleep_time=0.1;
-		}
-		else
-		{
-			`log("Priority target:"$currentPrioritizedTargetToFireAtSentry);
-			Pawn.LockDesiredRotation(false,false);
-			Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAtSentry.Location - Pawn.Location),true,true,0.25);
-			distance =  VSize2D(currentPrioritizedTargetToFireAtSentry.Location - Pawn.Location);
-			Pawn.StartFire(1);
-			if(distance > 1500)
-			{
-				currentPrioritizedTargetToFireAtSentry = none;
-				Pawn.StopFire(0);
-				Pawn.StopFire(1);
-				goToState('Roaming');
-			}
-			sleep_time = 0.03;
-		}
-		sleep(sleep_time);
-		goTo('Begin');
-}
+
+
 
 
 
@@ -185,49 +140,37 @@ function bool FindNavMeshPath()
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
-    goToState('Cautious');
-    `log("finishing the hearNoise event in Roaming");
+
     lookAt(NoiseMaker);
   }
   
- 
-
-  event seeMonster(Pawn seen){ //only triggers for pawns with bIsPlayer set to false
-    `log(Pawn$"sees "$seen$", which is a monster.");
-
-  }
 
   
-  event seePlayer(Pawn seen){//triggers for pawns that are players
-    `log(Pawn$"sees "$seen$", which is a player.");
-    if(VSize2D(Location-seen.Location) < 600){
-      goToState('Cautious');
-      LookAt(seen);
+  event seePlayer(Pawn seen){
+
+    `log(Pawn$" sees "$seen);
+    if(seen.isA('HostagePawn')){
+      return;
     }
+
+    if(distTo(seen) < Pawn.sightRadius){    //it's a captorpawn, and we don't roam while on the same team with any captor 
+      pawnImThinkingAbout = seen;
+      goToState('Cautious');    //so it is also not on our team
+    }
+
   }
   
-
-  event MayFall(bool bFloor, Object.Vector floorNormal){
-    `log("hi1");
-    WorldInfo.Game.Broadcast(self,"bfloor: "$bFloor$".  floorNormal: "$floorNormal);
-  }
-
-  event MoveUnreachable (Object.Vector AttemptedDest, Actor AttemptedTarget){
-    `log("hi2");
-    WorldInfo.Game.Broadcast(self,"AttemptedDest: "$ AttemptedDest$ ".  AttemptedTarget: "$attemptedTarget);
-  }
-
 
   Begin:
-        WorldInfo.Game.Broadcast(self,"ROAMING");
-        Pawn.GroundSpeed = 100;
-    FlushPersistentDebugLines();
+    WorldInfo.Game.Broadcast(self,"ROAMING");
+    Pawn.GroundSpeed = 100;
     percentOfTimeSpentJustLooking = 40;
     maxWaitTime = 2;
      
     //Generate random vector "random" and random wait time
 
-
+  ContinueRoaming:
+    FlushPersistentDebugLines();
 
     while(RandRange(1,100) < percentOfTimeSpentJustLooking ){
       random  = VRand();
@@ -258,9 +201,6 @@ function bool FindNavMeshPath()
      
     if( NavigationHandle.PointReachable( dest) ){
      MoveTo(dest);
-     //WorldInfo.Game.Broadcast(self,"sleeping1");
-     //sleep(1);
-     //WorldInfo.Game.Broadcast(self,"moving toward the player");
     }
      
      else if( FindNavMeshPath() ){
@@ -273,22 +213,17 @@ function bool FindNavMeshPath()
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
         {
           `log(Pawn$" moving to temp dest");
-          WorldInfo.Game.Broadcast(self,"moving to temp dest");
           DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
           DrawDebugSphere(TempDest,16,20,255,0,0,true);
 
 
           do{
-            WorldInfo.Game.Broadcast(self,"running in direction of temp dest");
             runInDirectionOf(TempDest);
             sleep(0.5);
           }
           until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
           VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
           
-
-          //MoveTo( TempDest, dest );
-          WorldInfo.Game.Broadcast(self,"done moving to temp dest");
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
@@ -298,17 +233,13 @@ function bool FindNavMeshPath()
     }
     
     else{
-      `log(Pawn$" failure to do path planning to get to "$dest);
-      //if(canSee(Pawn(dest))){
-      //  WorldInfo.Game.Broadcast(self,"I can see you...");
-      //}
       WorldInfo.Game.Broadcast(self,"failure case 2");
       sleep(1);
     }
 
 
    
-    goTo('Begin');
+    goTo('ContinueRoaming');
 }
 
 
@@ -339,6 +270,7 @@ State Cautious{
   local Vector random;
   local float waitTime;
   local float percentWorried;
+  local array<CaptorPawn> captors;
 
   local int percentOfTimeSpentJustLooking;
   local int maxWaitTime;
@@ -352,7 +284,6 @@ State Cautious{
   
     
     lookAt(NoiseMaker);
-    goToState('Cautious');
   }
 
  
@@ -361,48 +292,72 @@ State Cautious{
 
   
   event seePlayer(Pawn seen){//triggers for pawns that are players
+
     `log(Pawn$"sees "$seen$", which is a player.");
-    LookAt(seen);
-    if(VSize2D(seen.Location - Pawn.Location) < 600){
+    
+    if(seen.isA('HostagePawn')){
+      return;
+    }
+
+    //it's a captorpawn and we aren't on the same team
+   
+    pawnImThinkingAbout = seen;
+
+    if(distTo(seen) < 1000){
       goToState('BackingUp');
     }
     else{
-      goToState('Cautious');
+     percentWorried = 100;
     }
-
+    lookAt(seen);
   }
+
 
   Begin:
     Pawn.GroundSpeed = 200;
-        WorldInfo.Game.Broadcast(self,"CAUTIOUS");
-        stopMoving();
-   percentWorried = 100;
-    maxWaitTime = 4;
-     
+    WorldInfo.Game.Broadcast(self,"CAUTIOUS");
+    stopMoving();
+    percentWorried = 100;
+    maxWaitTime = 2;
+    
+    //foreach WorldInfo.AllPawns(class'CaptorPawn', P){
+    //  captors.addItem(P);
+    //}
+    goTo('ContinueCaution');
 
-    while(percentWorried > 0 ){
+  ContinueCaution:
+
       waitTime = RandRange(1,maxWaitTime);
       WorldInfo.Game.Broadcast(self,"waiting for "$waitTime$" seconds.");
       sleep(waitTime);
-      percentWorried -= 40*waitTime;
 
-      random  = VRand();
-      random = Pawn.Location + random * 250;
+      if(!canSee(pawnImThinkingAbout)){
+        percentWorried -= 40*waitTime;
+
+        random  = VRand();
+        random = Pawn.Location + random * 250;
+       
+        //random.z = Pawn.Location.z;
+      
+        dest = random;
+        DrawDebugLine(Pawn.Location,dest,255,0,0,true);
+        DrawDebugSphere(dest,16,20,255,0,0,true);
+
+        lookAtVector(dest);
+        finishRotation();
+      }
+      else{
+        lookAt(pawnImThinkingAbout);
+      }
      
-      //random.z = Pawn.Location.z;
+      if(percentWorried <= 0){
+        stopMoving();
+        goToState('Roaming');
+      }
+      else{
+        goTo('ContinueCaution');
+      }
 
-      dest = random;
-      DrawDebugLine(Pawn.Location,dest,255,0,0,true);
-      DrawDebugSphere(dest,16,20,255,0,0,true);
-
-      lookAtVector(dest);
-      finishRotation();
-     
-    }
-    
-
-     stopMoving();
-    goToState('Roaming');
 }
 
 
@@ -437,13 +392,22 @@ function bool FindNavMeshPath()
     return NavigationHandle.FindPath();
   }
 
+  event seePlayer(Pawn seen){
+    if(!seen.Controller.isA('PlayerController')){
+      WorldInfo.Game.Broadcast(self,"SAW A MONSTER!");
+    }
+    else{
+      `log("see a player");
+    }
+  }
+
 
   Begin:
 
 
      WorldInfo.Game.Broadcast(self,"doing path planning");
 
-    dest = GetALocalPlayerController().Pawn;
+    dest = myCaptor; //GetALocalPlayerController().Pawn;
 
 
      `log(Pawn$"attempting navigation");
@@ -531,42 +495,56 @@ State BackingUp{
   local float distance;
   local string message;
 
-  event SeePlayer(Pawn SeenPlayer){
-    pawnToFlee = SeenPlayer;
+  event SeePlayer(Pawn seen){
+    if(pawnToFlee != none){
+      return;
+    }
+    if(seen.isA('HostagePawn')){
+      return;
+    }
+    //it's a captor!
+    pawnImThinkingAbout = seen;
+    pawnToFlee = seen;
   }
 
   Begin:
+  Pawn.GroundSpeed = 200;
   WorldInfo.Game.Broadcast(self,"BACKING UP");
+  pawnToFlee = pawnImThinkingAbout;
     while(pawnToFlee == none){
+      `log("looking for pawn to flee");
       sleep(0.3f);
     }
+  stopMoving();
 
-    distance = VSize2D(Pawn.Location - pawnToFlee.Location);
-    if(distance > 800){
+  GoTo('ContinueBackingUp');
+
+  ContinueBackingUp:
+    WorldInfo.Game.Broadcast(self,"continuing to back up.  dist = "$distTo(pawnToFlee));
+
+    distance = distTo(pawnToFlee);
+    if(distance > 1200){
       goToState('Cautious');
     }
-    if(distance < 400){
-      goToState('Following');
+    if(distance < 600){
+      goToState('Fleeing');
     }
 
     dest = Pawn.Location - pawnToFlee.Location; //offset
     dest = normal(dest)*1000; //scaled offset
     dest = dest+ Pawn.Location; //actual destination
-    //preferredDestination = Spawn(class'Actor');
-    //preferredDestination.setLocation(dest);
+
 
     `log("dest: "$dest);
-    Pawn.GroundSpeed = 200;
-    lookAt(pawnToFlee);
-    finishRotation();
-       
-        runInDirectionOf(dest);
     
-        //WorldInfo.Game.Broadcast(self,"after moving");
-
+    lookAt(pawnToFlee);
+    runInDirectionOf(dest);
+    //finishRotation();
+    Sleep(0.5);
    
-    goTo('Begin');
+    goTo('ContinueBackingUp');
 }
+
 
 
 
@@ -584,6 +562,8 @@ State Fleeing{
   local float distance;
   local vector dest;
 
+  local float forward_looking_distance;
+
 function bool FindNavMeshPath()
   {
     // Clear cache and constraints (ignore recycling for the moment)
@@ -597,28 +577,90 @@ function bool FindNavMeshPath()
     // Find path
     return NavigationHandle.FindPath();
   }
+function Vector turn_until_you_can_run(){
+//FIX THIS FUNCTION!
 
-  event SeePlayer(Pawn SeenPlayer){
+
+  local vector dest_attempt;
+  local Rotator xyOrientation;
+
+  local float adjustment_increment;
+  local int adjustment_counter;
+  local float startYaw;
+
+  //randomly choose to seek out a path to the left or to the right
+  if(RandRange(1,100) > 50){
+    adjustment_increment = 50;
+  }
+  else{
+    adjustment_increment = -50;
+  }
+
+
+  
+  xyOrientation = Pawn.Rotation;
+  adjustment_counter = 0;
+  startYaw = xyOrientation.yaw;
+
+ 
+  do{
+    WorldInfo.Game.Broadcast(self,"turning");
+    adjustment_counter += 1;
+    adjustment_increment *= -1;
+
+   xyOrientation.yaw = startYaw + adjustment_increment*adjustment_counter;
+
+    dest_attempt = Pawn.Location + normal(vector(xyOrientation))*forward_looking_distance;
+
+    DrawDebugLine(Pawn.Location,dest_attempt,255,0,0,true);
+
+
+  }until( adjustment_counter > 400 || NavigationHandle.PointReachable(dest_attempt));
+  return dest_attempt;
+
+}
+  event SeePlayer(Pawn seen){
+    if(seen.isA('HostagePawn')){
+      return;
+    }
     certainty = 100;
-    player = SeenPlayer;
-
+    player = seen;
+    pawnImThinkingAbout = seen;
     estimated_player_location = player.Location; //a perfect estimation!
+  }
+
+  event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
+    local float the_distance;
+    the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+
+    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
+
+    if(player == NoiseMaker){
+      certainty = 100;
+      estimated_player_location = player.Location;
+    }
   }
 
   Begin:
     WorldInfo.Game.Broadcast(self,"FLEEING");
+    stopMoving();
     Pawn.GroundSpeed = 350;
-
+    certainty = 100;
+    forward_looking_distance = 400;
+    player = pawnImThinkingAbout;
     while(player == none){ //wait for the seePlayer event to trigger
           sleep(0.1f);
     }
+    GoTo('ContinueFleeing');
 
-    distance = VSize2D(player.location-Pawn.location);
+
+  ContinueFleeing:
+    distance = distTo(player);
     if(distance < 600){                                       //we hear the footsteps
       estimated_player_location = player.Location;
       certainty = 100;
     }
-    certainty -= 5;
+    certainty -= 3;
     if(certainty < 0){
       stopMoving();
       lookAtVector(estimated_player_location);
@@ -629,7 +671,7 @@ function bool FindNavMeshPath()
     }
     
     dest = Pawn.Location - estimated_player_location; //offset
-    dest = normal(dest)*400; //scaled offset
+    dest = normal(dest)*forward_looking_distance; //scaled offset
     dest = Pawn.Location+dest; //actual destination
     //preferredDestination.setLocation(dest);
 
@@ -649,23 +691,30 @@ if( !NavigationHandle.PointReachable( dest) ){
         // move to the first node on the path
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
         {
-          `log(Pawn$" moving to temp dest");
-          WorldInfo.Game.Broadcast(self,"moving to temp dest");
-          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-          DrawDebugSphere(TempDest,16,20,255,0,0,true);
+          if(!(VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius())){
 
 
-          do{
-            WorldInfo.Game.Broadcast(self,"running in direction of temp dest");
-            runInDirectionOf(TempDest);
-            sleep(0.1);
+            `log(Pawn$" moving to temp dest");
+            WorldInfo.Game.Broadcast(self,"moving to temp dest");
+            DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
+            DrawDebugSphere(TempDest,16,20,255,0,0,true);
+
+
+            do{
+              WorldInfo.Game.Broadcast(self,"running in direction of temp dest");
+              runInDirectionOf(TempDest);
+              sleep(0.1);
+            }
+            until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
+            VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
+            
+
+            //MoveTo( TempDest, dest );
+            WorldInfo.Game.Broadcast(self,"done moving to temp dest");
           }
-          until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
-          VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-          
-
-          //MoveTo( TempDest, dest );
-          WorldInfo.Game.Broadcast(self,"done moving to temp dest");
+          else{
+            runInDirectionOf(dest);
+          }
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
@@ -675,7 +724,9 @@ if( !NavigationHandle.PointReachable( dest) ){
     }
     
     else{
-     runInDirectionOf(FindRandomDest().Location);
+     dest = turn_until_you_can_run();
+     runInDirectionOf(dest);
+     sleep(0.5);
     }
   }
 
@@ -686,7 +737,7 @@ if( !NavigationHandle.PointReachable( dest) ){
 
 
     sleep(0.1f);
-    goTo('Begin');
+    goTo('ContinueFleeing');
 }
 
 
@@ -731,5 +782,5 @@ defaultproperties
   waitPriority = 0
   nothingPriority = -1
   //continueCurrentAction = false
-
+  bIsPlayer=True
 }
