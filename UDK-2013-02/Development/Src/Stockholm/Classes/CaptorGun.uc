@@ -91,7 +91,9 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 						if(Victim.isA('HostagePawn')){
 							hostageP = HostagePawn(Victim);
 							captorP = CaptorPawn(Instigator);
-							
+							hostageC = HostageController(hostageP.Controller);
+							hostageC.pawnImThinkingAbout = captorP;
+							hostageC.GoToState('Fleeing');
 							hostageP.receivePersuasion(captorP);
 
 						}

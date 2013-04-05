@@ -53,7 +53,7 @@ simulated function switchToTeam(byte team_number){
 
   game = StockholmGame(WorldInfo.Game);
   myCaptor = captorCapturingMe;
-  HostageController(Controller).myCaptor = captorCapturingMe;
+  HostageController(Controller).capturedBy(myCaptor);
 
   if(team_number == game.redTeamNum){
     `log("I've switched to the red team.");
@@ -132,8 +132,12 @@ simulated function increaseLoyalty(byte team_number){
 }
 
 
-
-
+event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
+{
+  Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
+  HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
+  HostageController(Controller).GoToState('Fleeing');
+}
 
 
 

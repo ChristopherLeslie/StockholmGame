@@ -78,6 +78,14 @@ function reactToSeeingAPlayer(Pawn seen){
   
 }
 
+function capturedBy(CaptorPawn captor){
+local name curstate;
+  `log("I been captured!");
+  curstate = GetStateName();
+  EndState(curstate);
+  GoToState('Following');
+}
+
 
 
 auto State Begin{
@@ -578,8 +586,6 @@ function bool FindNavMeshPath()
     return NavigationHandle.FindPath();
   }
 function Vector turn_until_you_can_run(){
-//FIX THIS FUNCTION!
-
 
   local vector dest_attempt;
   local Rotator xyOrientation;
@@ -590,10 +596,10 @@ function Vector turn_until_you_can_run(){
 
   //randomly choose to seek out a path to the left or to the right
   if(RandRange(1,100) > 50){
-    adjustment_increment = 50;
+    adjustment_increment = 200;
   }
   else{
-    adjustment_increment = -50;
+    adjustment_increment = -200;
   }
 
 
