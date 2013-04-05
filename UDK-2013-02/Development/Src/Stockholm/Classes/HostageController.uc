@@ -7,6 +7,7 @@ class HostageController extends GameAIController;
 var Pawn pawnImThinkingAbout;
 var Pawn myCaptor;
 
+
 var Bool bIsFollowingCaptor;
 var Bool bIsFollowingOrder;
 
@@ -24,8 +25,7 @@ var int waitPriority;
 var int nothingPriority;
 var int fireAtEnemyHostagePriority;
 
-
-
+var bool captured;
 
 
 //at the start of the level
@@ -33,7 +33,7 @@ simulated event PostBeginPlay()
 {
   super.PostBeginPlay();
 
-
+  captured = false;
   Pawn.bAvoidLedges=true;
 }
 
@@ -80,10 +80,13 @@ function reactToSeeingAPlayer(Pawn seen){
 
 function capturedBy(CaptorPawn captor){
 local name curstate;
-  `log("I been captured!");
-  curstate = GetStateName();
-  EndState(curstate);
-  GoToState('Following');
+local int i;
+myCaptor = captor;
+  WorldInfo.Game.Broadcast(self,"I been captured!");
+
+ 
+    GoToState('Following');
+
 }
 
 
@@ -413,7 +416,7 @@ function bool FindNavMeshPath()
   Begin:
 
 
-     WorldInfo.Game.Broadcast(self,"doing path planning");
+     WorldInfo.Game.Broadcast(self,"FOLLOWING");
 
     dest = myCaptor; //GetALocalPlayerController().Pawn;
 
@@ -654,6 +657,7 @@ function Vector turn_until_you_can_run(){
     certainty = 100;
     forward_looking_distance = 400;
     player = pawnImThinkingAbout;
+    estimated_player_location = player.Location;
     while(player == none){ //wait for the seePlayer event to trigger
           sleep(0.1f);
     }

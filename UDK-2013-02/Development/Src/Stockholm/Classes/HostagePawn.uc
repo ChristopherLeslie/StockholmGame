@@ -135,8 +135,10 @@ simulated function increaseLoyalty(byte team_number){
 event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
   Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
-  HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
-  HostageController(Controller).GoToState('Fleeing');
+  if(damageAmount > 0){
+    HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
+    HostageController(Controller).GoToState('Fleeing');
+  }
 }
 
 

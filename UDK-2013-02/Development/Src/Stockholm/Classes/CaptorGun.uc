@@ -93,7 +93,7 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 							captorP = CaptorPawn(Instigator);
 							hostageC = HostageController(hostageP.Controller);
 							hostageC.pawnImThinkingAbout = captorP;
-							hostageC.GoToState('Fleeing');
+							//hostageC.GoToState('Fleeing');
 							hostageP.receivePersuasion(captorP);
 
 						}
