@@ -3,7 +3,6 @@ class CaptorController extends UTPlayerController;
 var class<UTFamilyInfo> CharacterClass; 
 var MaterialInterface defaultMaterial0; //for some reason necessary for setting the materials later even though I don't ever define what the defaultMaterial0 is
 
-var byte teamNum;
 
 simulated event PostBeginPlay()
 {
@@ -27,12 +26,13 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 		inPawn.Mesh.SetMaterial(i,defaultMaterial0);
 	}
 
+	CaptorPawn(Pawn).teamNum = 1; //Blue
 }
 
 
 
 simulated function byte getTeamNum(){
-  return teamNum;
+  return CaptorPawn(Pawn).teamNum;
 }
 
 
@@ -40,5 +40,4 @@ defaultproperties
 {
   //Points to the UTFamilyInfo class for your custom character
   CharacterClass=class'UTFamilyInfo_Liandri_Male'
-  teamNum = 1; //blue
 }

@@ -79,15 +79,51 @@ function reactToSeeingAPlayer(Pawn seen){
 }
 
 function capturedBy(CaptorPawn captor){
-local name curstate;
-local int i;
-myCaptor = captor;
+  myCaptor = captor;
   WorldInfo.Game.Broadcast(self,"I been captured!");
-
- 
-    GoToState('Following');
-
+  GoToState('Following');
 }
+
+
+function bool FindNavMeshPathToActor(Actor dest)
+  {
+    // Clear cache and constraints (ignore recycling for the moment)
+    NavigationHandle.PathConstraintList = none;
+    NavigationHandle.PathGoalList = none;
+
+    // Create constraints
+    class'NavMeshPath_Toward'.static.TowardGoal( NavigationHandle,dest );
+    class'NavMeshGoal_At'.static.AtActor( NavigationHandle, dest,32 );
+
+    // Find path
+    return NavigationHandle.FindPath();
+  }
+
+function bool FindNavMeshPathToLocation(Vector dest)
+  {
+    // Clear cache and constraints (ignore recycling for the moment)
+    NavigationHandle.PathConstraintList = none;
+    NavigationHandle.PathGoalList = none;
+
+    // Create constraints
+    class'NavMeshPath_Toward'.static.TowardPoint( NavigationHandle,dest );
+    class'NavMeshGoal_At'.static.AtLocation( NavigationHandle, dest,32 );
+
+    // Find path
+    return NavigationHandle.FindPath();
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -128,24 +164,6 @@ State Roaming{
   local int maxWaitTime;
 
 
-function bool FindNavMeshPath()
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardPoint( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtLocation( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
-
-
-
-
-  
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
     local float distance;
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
@@ -214,7 +232,7 @@ function bool FindNavMeshPath()
      MoveTo(dest);
     }
      
-     else if( FindNavMeshPath() ){
+     else if( FindNavMeshPathToLocation(dest) ){
       `log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest);
         FlushPersistentDebugLines();
@@ -389,20 +407,6 @@ State Following{
 local Actor dest;
 
 
-function bool FindNavMeshPath()
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardGoal( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtActor( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
-
   event seePlayer(Pawn seen){
     if(!seen.Controller.isA('PlayerController')){
       WorldInfo.Game.Broadcast(self,"SAW A MONSTER!");
@@ -433,7 +437,7 @@ function bool FindNavMeshPath()
          WorldInfo.Game.Broadcast(self,"moving toward the player");
      }
      
-     else if( FindNavMeshPath() ){
+     else if( FindNavMeshPathToActor(dest) ){
       `log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest.Location);
         FlushPersistentDebugLines();
@@ -575,19 +579,6 @@ State Fleeing{
 
   local float forward_looking_distance;
 
-function bool FindNavMeshPath()
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardPoint( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtLocation( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
 function Vector turn_until_you_can_run(){
 
   local vector dest_attempt;
@@ -692,7 +683,7 @@ function Vector turn_until_you_can_run(){
 
 
 if( !NavigationHandle.PointReachable( dest) ){
-     if( FindNavMeshPath() ){
+     if( FindNavMeshPathToLocation(dest) ){
       `log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest);
         FlushPersistentDebugLines();

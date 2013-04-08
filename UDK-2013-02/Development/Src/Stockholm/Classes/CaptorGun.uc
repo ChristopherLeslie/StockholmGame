@@ -9,8 +9,7 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 	local HostageController hostageC;
 	local HostagePawn hostageP;
 	local CaptorPawn captorP;
-	local CaptorController captorC;
-	local StockholmPawn stockholmP;
+	
 
 	Victim = TestImpact.HitActor;
 
