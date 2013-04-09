@@ -3,8 +3,9 @@ class CaptorPawn extends StockholmPawn;
 var float ElapsedRegenTime;
 var float RegenAmount;
 var float RegenTime;
-
-
+var int WardPickups;
+var int SentryPickups;
+var int MinePickups;
 
 
 simulated event PostBeginPlay()
@@ -37,6 +38,20 @@ event Tick(float DeltaTime)
   }
 }
 
+function IncWard(SeqAct_IncWard action)
+{
+	WardPickups = WardPickups + 1;
+}
+
+function IncSentry(SeqAct_IncSentry action)
+{
+	SentryPickups = SentryPickups + 1;
+}
+
+function IncMine(SeqAct_IncMine action)
+{
+	MinePickups = MinePickups + 1;
+}
 
 
 defaultproperties
@@ -44,4 +59,7 @@ defaultproperties
   //set defaults for regeneration properties
   RegenAmount=2
   RegenTime=0.3
+  WardPickups = 0
+  SentryPickups = 0
+  MinePickups = 0
 }
