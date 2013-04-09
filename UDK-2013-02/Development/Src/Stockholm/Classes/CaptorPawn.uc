@@ -32,7 +32,7 @@ event Tick(float DeltaTime)
     ElapsedRegenTime = 0.0f;
     GroundSpeed = 400;
     if(Velocity != Vect(0,0,0)){
-      `log("footstep noise!");
+      //`log("footstep noise!");
       makeNoise(0.01,'footsteps');
     }
   }
