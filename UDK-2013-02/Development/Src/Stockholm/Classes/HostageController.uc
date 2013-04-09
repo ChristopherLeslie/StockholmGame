@@ -755,13 +755,17 @@ if( !NavigationHandle.PointReachable( dest) ){
 
 
 
+function GoToWard()
+{
+	GoToState('Warding');
+}
 
 
+State Warding
+{
 
 
-
-
-
+}
 
 
 
