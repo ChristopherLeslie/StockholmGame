@@ -52,8 +52,11 @@ exec function CreateWard()
 		{
 			`log("Hit a hostage!");
 			target = HostagePawn(traceHit);
-			HostageController(target.Controller).GoToWard();
-			CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
+			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//{
+				HostageController(target.Controller).GoToWard();
+				CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
+			//}
 		}
 		else
 		{
@@ -89,8 +92,11 @@ exec function CreateSentry()
 		{
 			`log("Hit a hostage!");
 			target = HostagePawn(traceHit);
-			HostageController(target.Controller).GoToSentry();
-			CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
+			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//{
+				HostageController(target.Controller).GoToSentry();
+				CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
+			//}
 		}
 		else
 		{
@@ -126,8 +132,11 @@ exec function CreateMine()
 		{
 			`log("Hit a hostage!");
 			target = HostagePawn(traceHit);
-			HostageController(target.Controller).GoToRemoteMine();
-			CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
+			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//{
+				HostageController(target.Controller).GoToRemoteMine();
+				CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
+			//}
 		}
 		else
 		{

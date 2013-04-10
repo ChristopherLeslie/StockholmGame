@@ -27,6 +27,12 @@ var int fireAtEnemyHostagePriority;
 
 var bool captured;
 
+var int SentryDistanceToTargetStart;
+var int SentryDistanceToTargetStop;
+var int SentryMaxConsecutiveMisses;
+
+var int WardingDistance;
+
 
 //at the start of the level
 simulated event PostBeginPlay()
@@ -773,13 +779,18 @@ State Sentry
 	local CaptorPawn captor;
 	local HostagePawn hostage;
 	local Pawn P;
+	local Actor hitActor;
 	local Vector v;
+	local Vector hitLocation;
+	local Vector hitNormal;
 	local float scale;
+	local int successiveMisses;
 	Begin:
 		if(currentPrioritizedTargetToFireAt == none
 			   || currentPrioritizedTargetToFireAt.health <= 0)
 		{
-			`log("Looking for a target");
+			//`log("Looking for a target");
+			successiveMisses = 0;
 			currentPrioritizedTargetToFireAt = none;
 			Pawn.StopFire(1);
 			foreach WorldInfo.AllPawns(class'Pawn', P)
@@ -794,27 +805,66 @@ State Sentry
 					}
 					else //Enemy Captor
 					{
-						if(distance < 400){
-						currentPrioritizedTargetToFireAt = captor;
+						if(distance < SentryDistanceToTargetStart)
+						{
+							currentPrioritizedTargetToFireAt = captor;
+							`log("Priority target:"$currentPrioritizedTargetToFireAt);
 						}
 					}
 				}
 				else //NOT a CaptorPawn
 				{
+					if(P.isA('HostagePawn')) //HostagePawn
+					{
+						hostage = HostagePawn(P);
+						distance = VSize2D(Pawn.Location - hostage.Location);
+						if(hostage.getTeamNum() == Pawn.getTeamNum()) //Friendly Hostage
+						{
 
+						}
+						else //Enemy Hostage
+						{
+							if(distance < SentryDistanceToTargetStart)
+							{
+								currentPrioritizedTargetToFireAt = hostage;
+								`log("Priority target:"$currentPrioritizedTargetToFireAt);
+							}
+						}
+					}
 				}
 			}
 		}
 		else
 		{
-			`log("Priority target:"$currentPrioritizedTargetToFireAt);
-			Pawn.LockDesiredRotation(false,false);
-			Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAt.Location - Pawn.Location),true,true,0.25);
-			distance = VSize2D(currentPrioritizedTargetToFireAt.Location - Pawn.Location);
-			Pawn.StartFire(1);
-			if(distance > 800)
+			//`log("Priority target:"$currentPrioritizedTargetToFireAt);
+			hitActor = Trace(hitLocation, hitNormal, currentPrioritizedTargetToFireAt.Location, Pawn.Location, true); //HitLocation, Hit Normal, TraceEnd, TraceStart
+			if((hitActor == none) || (hitActor.isA('WorldInfo')))
 			{
-				currentPrioritizedTargetToFireAt = none;
+				//`log("Target is behind something:"$hitActor);
+				successiveMisses = successiveMisses + 1;
+				if(SentryMaxConsecutiveMisses < successiveMisses)
+				{
+					currentPrioritizedTargetToFireAt = none;
+				}
+				else
+				{
+					`log("Target has been missed "$successiveMisses$" times");
+					Pawn.LockDesiredRotation(false,false);
+					Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAt.Location - Pawn.Location),true,true,0.25);
+				}
+			}
+			else
+			{
+				//`log("Target is hit:"$hitActor);
+				successiveMisses = 0;
+				Pawn.LockDesiredRotation(false,false);
+				Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAt.Location - Pawn.Location),true,true,0.25);
+				distance = VSize2D(currentPrioritizedTargetToFireAt.Location - Pawn.Location);
+				Pawn.StartFire(1);
+				if(distance > SentryDistanceToTargetStop)
+				{
+					currentPrioritizedTargetToFireAt = none;
+				}
 			}
 		}
 		sleep(0.1);
@@ -844,90 +894,92 @@ State Warding
 	local float distance;
 	local float zcomponent;
 	local Vector BackwardVector;
-		local Vector captorLocation;
-		local Vector captorVelocity;
-		local Vector botLocation;
-		local float currentDistance;
-		local float acceleratedDistance;
+	local Vector captorLocation;
+	local Vector captorVelocity;
+	local Vector botLocation;
+	local float currentDistance;
+	local float acceleratedDistance;
 	local Vector tempVector;
 	local Vector unitVector;
 	local Vector notunitvector;
 	Begin:
-		foreach WorldInfo.AllPawns(class'Pawn', P){
-			  if(P.isA('CaptorPawn')){ //Captor
+		foreach WorldInfo.AllPawns(class'Pawn', P)
+		{
+			if(P.isA('CaptorPawn')) //Captor
+			{
 				captor = CaptorPawn(P);
 				distance = VSize2D(Pawn.Location - captor.Location);
 				if(captor.getTeamNum() != Pawn.getTeamNum()) //Enemy Captor
-		{
-				  if(distance < 400) //Enemy Captor is near me
-		{
-		captorLocation = captor.Location;
-		captorVelocity = captor.Velocity;
-		botLocation = Pawn.Location;
-		currentDistance = (captorLocation.x - botLocation.x)+(captorLocation.y - botLocation.y)+(captorLocation.z - botLocation.z);
-		if(currentDistance < 0)
-		{
-		currentDistance = currentDistance * -1;
+				{
+					if(distance < WardingDistance) //Enemy Captor is near me
+					{
+						captorLocation = captor.Location;
+						captorVelocity = captor.Velocity;
+						botLocation = Pawn.Location;
+						currentDistance = (captorLocation.x - botLocation.x)+(captorLocation.y - botLocation.y)+(captorLocation.z - botLocation.z);
+						if(currentDistance < 0)
+						{
+							currentDistance = currentDistance * -1;
+						}
+						notunitvector = captorLocation - botLocation;
+						unitVector = notunitvector / Sqrt(Square(notunitvector.x) + Square(notunitvector.y) + Square(notunitvector.z));
+						acceleratedDistance = (captorLocation.x + captorVelocity.x - botLocation.x) + (captorLocation.y + captorVelocity.y - botLocation.y) + (captorLocation.z + captorVelocity.z - botLocation.z);
+						if(acceleratedDistance < 0)
+						{
+							acceleratedDistance = acceleratedDistance * -1;
+						}
+						if(acceleratedDistance < currentDistance)
+						{
+							`log("Attempting to reverse the captor");
+							if(captor.Velocity.x < 0)
+							{
+								BackwardVector.x = 200;
+							}
+							else
+							{
+								BackwardVector.x = -200;
+							}
+							if(captor.Velocity.y < 0)
+							{
+								BackwardVector.y = 200;
+							}
+							else
+							{
+								BackwardVector.y = -200;
+							}
+							BackwardVector.z = 100;
+							//BackwardVector = captor.Velocity * vect(-3,-3,0);
+							//BackwardVector.x = -5;
+							//BackwardVector.y = -5;
+							//BackwardVector.x = 0;
+							//BackwardVector.y = 0;
+							//BackwardVector.z = 0;
+							//captor.SetPhysics(PHYS_Falling);
+							zcomponent = botLocation.z+50-captor.Location.z;
+							if(zcomponent < 45)
+							{
+								zcomponent = 45;
+							}
+							else
+							{
+								if(zcomponent<0)
+								{
+									zcomponent = 0;
+								}
+							}
+							tempVector = zcomponent * vect(0,0,1);
+							captor.SetLocation(captor.Location + tempVector);
+							captor.Velocity = 500 * unitVector;
+						}
+						else
+						{
+							//`log("Captor direction is good");
+						}
+					}
+				}
+			}
 		}
-		notunitvector = captorLocation - botLocation;
-		unitVector = notunitvector / Sqrt(Square(notunitvector.x) + Square(notunitvector.y) + Square(notunitvector.z));
-		acceleratedDistance = (captorLocation.x + captorVelocity.x - botLocation.x) + (captorLocation.y + captorVelocity.y - botLocation.y) + (captorLocation.z + captorVelocity.z - botLocation.z);
-		if(acceleratedDistance < 0)
-		{
-		acceleratedDistance = acceleratedDistance * -1;
-		}
-		if(acceleratedDistance < currentDistance)
-		{
-		`log("Attempting to reverse the captor");
-		if(captor.Velocity.x < 0)
-		{
-		BackwardVector.x = 200;
-		}
-		else
-		{
-		BackwardVector.x = -200;
-		}
-		if(captor.Velocity.y < 0)
-		{
-		BackwardVector.y = 200;
-		}
-		else
-		{
-		BackwardVector.y = -200;
-		}
-		BackwardVector.z = 100;
-		//BackwardVector = captor.Velocity * vect(-3,-3,0);
-		//BackwardVector.x = -5;
-		//BackwardVector.y = -5;
-		//BackwardVector.x = 0;
-		//BackwardVector.y = 0;
-		//BackwardVector.z = 0;
-		//captor.SetPhysics(PHYS_Falling);
-		zcomponent = botLocation.z+50-captor.Location.z;
-		if(zcomponent < 45)
-		{
-		zcomponent = 45;
-		}
-		else
-		{
-		if(zcomponent<0)
-		{
-		zcomponent = 0;
-		}
-		}
-		tempVector = zcomponent * vect(0,0,1);
-		captor.SetLocation(captor.Location + tempVector);
-		captor.Velocity = 500 * unitVector;
-		}
-		else
-		{
-		//`log("Captor direction is good");
-		}
-				  }
-		}
-			  }
-		}
-		sleep(0.01);
+		sleep(0.005);
 		GoTo('Begin');
 }
 
@@ -952,4 +1004,8 @@ defaultproperties
   nothingPriority = -1
   //continueCurrentAction = false
   bIsPlayer=True
+  SentryDistanceToTargetStart = 400;
+  SentryDistanceToTargetStop = 3000;
+  SentryMaxConsecutiveMisses = 20;
+  WardingDistance = 450;
 }
