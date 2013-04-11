@@ -4,8 +4,13 @@ class HostageController extends GameAIController;
 //they may be used throughout this script
 
 
+var SoundCue hostageScream;
+
+
+
 var Pawn pawnImThinkingAbout;
 var Pawn myCaptor;
+
 
 
 var Bool bIsFollowingCaptor;
@@ -161,6 +166,7 @@ auto State Begin{
 
 
 State Roaming{
+
   local Vector dest;
   local Vector random;
   local float waitTime;
@@ -649,6 +655,9 @@ function Vector turn_until_you_can_run(){
 
   Begin:
     debug("FLEEING");
+    
+    PlaySound ( hostageScream );
+
     stopMoving();
     Pawn.GroundSpeed = 350;
     certainty = 100;
@@ -662,6 +671,7 @@ function Vector turn_until_you_can_run(){
 
 
   ContinueFleeing:
+
     distance = distTo(player);
     if(distance < 600){                                       //we hear the footsteps
       estimated_player_location = player.Location;
@@ -1011,4 +1021,8 @@ defaultproperties
   SentryDistanceToTargetStop = 3000;
   SentryMaxConsecutiveMisses = 20;
   WardingDistance = 450;
+
+
+
+  hostageScream = SoundCue'MyPackage.HostageFlee1_Cue';
 }
