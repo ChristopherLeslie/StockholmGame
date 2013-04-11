@@ -29,6 +29,126 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	CaptorPawn(Pawn).teamNum = 1; //Blue
 }
 
+exec function CreateWard()
+{
+	local vector loc, norm, end;
+	local TraceHitInfo hitInfo;
+	local Actor traceHit;
+	local HostagePawn target;
+	`log("Trying to create a ward");
+	`log("Pawn has "$CaptorPawn(Pawn).WardPickups$" ward pickups");
+	if(CaptorPawn(Pawn).WardPickups > 0)
+	{
+		//`log(Pawn.Location$" and "$vector(Rotation));
+		//end = Location + normal(vector(Rotation));
+		end = Location + vector(Rotation)*10000;
+		//`log(end);
+		traceHit = trace(loc, norm, end, Pawn.Location, true,, hitInfo);
+		if(traceHit == none)
+		{
+			`log("Hit Nothing");
+		}
+		else if(traceHit.isA('HostagePawn'))
+		{
+			`log("Hit a hostage!");
+			target = HostagePawn(traceHit);
+			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//{
+				HostageController(target.Controller).GoToWard();
+				CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
+			//}
+		}
+		else
+		{
+			`log("Missed all hostages");
+		}
+	}
+	else
+	{
+		`log("Not enough ward pickups");
+	}
+}
+
+exec function CreateSentry()
+{
+	local vector loc, norm, end;
+	local TraceHitInfo hitInfo;
+	local Actor traceHit;
+	local HostagePawn target;
+	`log("Trying to create a sentry");
+	`log("Pawn has "$CaptorPawn(Pawn).SentryPickups$" sentry pickups");
+	if(CaptorPawn(Pawn).SentryPickups > 0)
+	{
+		//`log(Pawn.Location$" and "$vector(Rotation));
+		//end = Location + normal(vector(Rotation));
+		end = Location + vector(Rotation)*10000;
+		//`log(end);
+		traceHit = trace(loc, norm, end, Pawn.Location, true,, hitInfo);
+		if(traceHit == none)
+		{
+			`log("Hit Nothing");
+		}
+		else if(traceHit.isA('HostagePawn'))
+		{
+			`log("Hit a hostage!");
+			target = HostagePawn(traceHit);
+			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//{
+				HostageController(target.Controller).GoToSentry();
+				CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
+			//}
+		}
+		else
+		{
+			`log("Missed all hostages");
+		}
+	}
+	else
+	{
+		`log("Not enough sentry pickups");
+	}
+}
+
+exec function CreateMine()
+{
+	local vector loc, norm, end;
+	local TraceHitInfo hitInfo;
+	local Actor traceHit;
+	local HostagePawn target;
+	`log("Trying to create a mine");
+	`log("Pawn has "$CaptorPawn(Pawn).MinePickups$" mine pickups");
+	if(CaptorPawn(Pawn).MinePickups > 0)
+	{
+		//`log(Pawn.Location$" and "$vector(Rotation));
+		//end = Location + normal(vector(Rotation));
+		end = Location + vector(Rotation)*10000;
+		//`log(end);
+		traceHit = trace(loc, norm, end, Pawn.Location, true,, hitInfo);
+		if(traceHit == none)
+		{
+			`log("Hit Nothing");
+		}
+		else if(traceHit.isA('HostagePawn'))
+		{
+			`log("Hit a hostage!");
+			target = HostagePawn(traceHit);
+			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//{
+				HostageController(target.Controller).GoToRemoteMine();
+				CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
+			//}
+		}
+		else
+		{
+			`log("Missed all hostages");
+		}
+	}
+	else
+	{
+		`log("Not enough mine pickups");
+	}
+}
+
 
 
 simulated function byte getTeamNum(){
