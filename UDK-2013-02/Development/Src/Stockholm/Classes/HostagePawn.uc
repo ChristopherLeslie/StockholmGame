@@ -12,7 +12,7 @@ var MaterialInterface defaultMaterial0;
 
 simulated event PostBeginPlay()
 {
-  setDrawScale(1.0f);
+  setDrawScale(0.5f);
   `log("hello, I'm a bot");
    Super.PostBeginPlay();
 }
@@ -52,8 +52,15 @@ simulated function switchToTeam(byte team_number){
   local StockholmGame game;
 
   game = StockholmGame(WorldInfo.Game);
-  myCaptor = captorCapturingMe;
-  HostageController(Controller).capturedBy(myCaptor);
+
+  if(team_number != game.neutralTeamNum){ //The Hostage joined a team
+    myCaptor = captorCapturingMe;
+    HostageController(Controller).capturedBy(myCaptor);
+    HostageController(Controller).GoToState('Following');
+  }
+  else{ //The Hostage Became Neutral
+    HostageController(Controller).GoToState('Fleeing');
+  }
 
   if(team_number == game.redTeamNum){
     `log("I've switched to the red team.");
@@ -149,7 +156,7 @@ defaultproperties
 {
  Begin Object Name=CollisionCylinder
         //is 40 by default, we could half it to match a drawscale of 0.5
-        CollisionHeight= 40
+        CollisionHeight= 20
     End Object
 
 

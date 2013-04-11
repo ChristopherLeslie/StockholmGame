@@ -80,7 +80,7 @@ function reactToSeeingAPlayer(Pawn seen){
 
 function capturedBy(CaptorPawn captor){
   myCaptor = captor;
-  WorldInfo.Game.Broadcast(self,"I been captured!");
+  debug("I been captured!");
   GoToState('Following');
 }
 
@@ -191,7 +191,7 @@ State Roaming{
   
 
   Begin:
-    WorldInfo.Game.Broadcast(self,"ROAMING");
+    debug("ROAMING");
     Pawn.GroundSpeed = 100;
     percentOfTimeSpentJustLooking = 40;
     maxWaitTime = 2;
@@ -214,7 +214,7 @@ State Roaming{
       lookAtVector(dest);
       finishRotation();
       waitTime = RandRange(1,maxWaitTime);
-      WorldInfo.Game.Broadcast(self,"waiting for "$waitTime$" seconds.");
+      debug("waiting for "$waitTime$" seconds.");
       sleep(waitTime);
     }
     
@@ -256,13 +256,13 @@ State Roaming{
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
-          WorldInfo.Game.Broadcast(self,"failure case 1");
+          debug("failure case 1");
           sleep(1);
         }
     }
     
     else{
-      WorldInfo.Game.Broadcast(self,"failure case 2");
+      debug("failure case 2");
       sleep(1);
     }
 
@@ -309,7 +309,7 @@ State Cautious{
     local float distance;
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    WorldInfo.Game.Broadcast(self,Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+    debug(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
   
     
     lookAt(NoiseMaker);
@@ -344,7 +344,7 @@ State Cautious{
 
   Begin:
     Pawn.GroundSpeed = 200;
-    WorldInfo.Game.Broadcast(self,"CAUTIOUS");
+    debug("CAUTIOUS");
     stopMoving();
     percentWorried = 100;
     maxWaitTime = 2;
@@ -357,7 +357,7 @@ State Cautious{
   ContinueCaution:
 
       waitTime = RandRange(1,maxWaitTime);
-      WorldInfo.Game.Broadcast(self,"waiting for "$waitTime$" seconds.");
+      debug("waiting for "$waitTime$" seconds.");
       sleep(waitTime);
 
       if(!canSee(pawnImThinkingAbout)){
@@ -409,7 +409,7 @@ local Actor dest;
 
   event seePlayer(Pawn seen){
     if(!seen.Controller.isA('PlayerController')){
-      WorldInfo.Game.Broadcast(self,"SAW A MONSTER!");
+      debug("SAW A MONSTER!");
     }
     else{
       `log("see a player");
@@ -420,7 +420,7 @@ local Actor dest;
   Begin:
 
 
-     WorldInfo.Game.Broadcast(self,"FOLLOWING");
+     debug("FOLLOWING");
 
     dest = myCaptor; //GetALocalPlayerController().Pawn;
 
@@ -432,9 +432,10 @@ local Actor dest;
          Pawn.GroundSpeed = 200;
          lookAt(dest);
          MoveToward(dest,dest);
-         //WorldInfo.Game.Broadcast(self,"sleeping1");
+         //debug("sleeping1");
          //sleep(1);
-         WorldInfo.Game.Broadcast(self,"moving toward the player");
+         debug("moving toward the player");
+         sleep(0.5);
      }
      
      else if( FindNavMeshPathToActor(dest) ){
@@ -447,13 +448,13 @@ local Actor dest;
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
         {
           `log(Pawn$" moving to temp dest");
-          WorldInfo.Game.Broadcast(self,"moving to temp dest");
+          debug("moving to temp dest");
           DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
           DrawDebugSphere(TempDest,16,20,255,0,0,true);
 
 
           do{
-            WorldInfo.Game.Broadcast(self,"running in direction of temp dest");
+            debug("running in direction of temp dest");
             runInDirectionOf(TempDest);
             lookAt(dest);
             sleep(0.5);
@@ -463,11 +464,11 @@ local Actor dest;
           
 
           //MoveTo( TempDest, dest );
-          WorldInfo.Game.Broadcast(self,"done moving to temp dest");
+          debug("done moving to temp dest");
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
-          WorldInfo.Game.Broadcast(self,"failure case 1");
+          debug("failure case 1");
           sleep(1);
         }
     }
@@ -475,9 +476,9 @@ local Actor dest;
     else{
       `log(Pawn$" failure to do path planning to get to "$dest);
       if(canSee(Pawn(dest))){
-        WorldInfo.Game.Broadcast(self,"I can see you...");
+        debug("I can see you...");
       }
-      WorldInfo.Game.Broadcast(self,"failure case 2");
+      debug("failure case 2");
       sleep(1);
     }
 
@@ -524,7 +525,7 @@ State BackingUp{
 
   Begin:
   Pawn.GroundSpeed = 200;
-  WorldInfo.Game.Broadcast(self,"BACKING UP");
+  debug("BACKING UP");
   pawnToFlee = pawnImThinkingAbout;
     while(pawnToFlee == none){
       `log("looking for pawn to flee");
@@ -535,7 +536,7 @@ State BackingUp{
   GoTo('ContinueBackingUp');
 
   ContinueBackingUp:
-    WorldInfo.Game.Broadcast(self,"continuing to back up.  dist = "$distTo(pawnToFlee));
+    debug("continuing to back up.  dist = "$distTo(pawnToFlee));
 
     distance = distTo(pawnToFlee);
     if(distance > 1200){
@@ -604,7 +605,6 @@ function Vector turn_until_you_can_run(){
 
  
   do{
-    WorldInfo.Game.Broadcast(self,"turning");
     adjustment_counter += 1;
     adjustment_increment *= -1;
 
@@ -642,7 +642,7 @@ function Vector turn_until_you_can_run(){
   }
 
   Begin:
-    WorldInfo.Game.Broadcast(self,"FLEEING");
+    debug("FLEEING");
     stopMoving();
     Pawn.GroundSpeed = 350;
     certainty = 100;
@@ -696,13 +696,13 @@ if( !NavigationHandle.PointReachable( dest) ){
 
 
             `log(Pawn$" moving to temp dest");
-            WorldInfo.Game.Broadcast(self,"moving to temp dest");
+            debug("moving to temp dest");
             DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
             DrawDebugSphere(TempDest,16,20,255,0,0,true);
 
 
             do{
-              WorldInfo.Game.Broadcast(self,"running in direction of temp dest");
+              debug("running in direction of temp dest");
               runInDirectionOf(TempDest);
               sleep(0.1);
             }
@@ -711,7 +711,7 @@ if( !NavigationHandle.PointReachable( dest) ){
             
 
             //MoveTo( TempDest, dest );
-            WorldInfo.Game.Broadcast(self,"done moving to temp dest");
+            debug("done moving to temp dest");
           }
           else{
             runInDirectionOf(dest);
@@ -719,7 +719,7 @@ if( !NavigationHandle.PointReachable( dest) ){
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
-          WorldInfo.Game.Broadcast(self,"failure case 1");
+          debug("failure case 1");
           sleep(0.1);
         }
     }
@@ -765,7 +765,9 @@ if( !NavigationHandle.PointReachable( dest) ){
 
 
 
-
+function debug(String s){
+  //WorldInfo.Game.Broadcast(self,s);
+}
 
 
 
