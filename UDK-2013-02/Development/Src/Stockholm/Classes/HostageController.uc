@@ -654,9 +654,12 @@ function Vector turn_until_you_can_run(){
   }
 
   Begin:
+    
     debug("FLEEING");
     
-    PlaySound ( hostageScream );
+   
+       PlaySound ( hostageScream );
+
 
     stopMoving();
     Pawn.GroundSpeed = 350;
@@ -1024,5 +1027,5 @@ defaultproperties
 
 
 
-  hostageScream = SoundCue'MyPackage.HostageFlee1_Cue';
+  hostageScream = SoundCue'Stockholm_Sounds.HostageFlee1_Cue';
 }
