@@ -658,7 +658,7 @@ function Vector turn_until_you_can_run(){
     debug("FLEEING");
     
    
-       PlaySound ( hostageScream );
+       PlaySound ( hostageScream,,,true,Pawn.Location);
 
 
     stopMoving();
