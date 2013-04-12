@@ -74,7 +74,7 @@ function HostagePawn closestHostage(){
 }
 
 function LookAt(Actor a){
-	lookAtVector(a.Location);
+	lookAtVector(a.Location); 
 }
 function aim(){
 	local Rotator final_rot;
