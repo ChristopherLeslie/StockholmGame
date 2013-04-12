@@ -12,7 +12,7 @@ var MaterialInterface defaultMaterial0;
 
 simulated event PostBeginPlay()
 {
-  setDrawScale(0.5f);
+  setDrawScale(0.80f);
   `log("hello, I'm a bot");
    Super.PostBeginPlay();
 }
@@ -156,7 +156,7 @@ defaultproperties
 {
  Begin Object Name=CollisionCylinder
         //is 40 by default, we could half it to match a drawscale of 0.5
-        CollisionHeight= 20
+        CollisionHeight= 32
     End Object
 
 
