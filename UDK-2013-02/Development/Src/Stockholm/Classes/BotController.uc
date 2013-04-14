@@ -31,6 +31,8 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	
 	//Set the pawn that CaptorController is controlling to look like a human
 	inPawn.Mesh.SetSkeletalMesh(SkeletalMesh'CH_IronGuard_Male.Mesh.SK_CH_IronGuard_MaleA');
+	inPawn.Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VRed');
+    inPawn.Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VRed');
 	//A lot of textures are missing if we don't do this step
 	//but it functions the same and looks like a crappy human
 	
@@ -206,10 +208,10 @@ State LookForHostages{
 
 	Begin:
 		debug("LOOKING FOR HOSTAGES");
-		//sleep(3);
-		//if(game.teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
-		//	GoToState('Sit');
-		//}
+		
+		if(game.teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
+			GoToState('Sit');
+		}
 		//There is at least one hostage of the kind that I want
 		
 		hostageTarget = closestHostage();
