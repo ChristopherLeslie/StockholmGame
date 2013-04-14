@@ -3,6 +3,9 @@ class CaptorController extends UTPlayerController;
 var class<UTFamilyInfo> CharacterClass; 
 var MaterialInterface defaultMaterial0; //for some reason necessary for setting the materials later even though I don't ever define what the defaultMaterial0 is
 
+var SoundCue wardVoice;
+var SoundCue mineVoice;
+var SoundCue sentryVoice;
 
 simulated event PostBeginPlay()
 {
@@ -61,6 +64,9 @@ exec function CreateWard()
 			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
 			//{
 				HostageController(target.Controller).GoToWard();
+				
+				PlaySound (wardVoice,,,true,);
+				
 				CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
 			//}
 		}
@@ -101,6 +107,9 @@ exec function CreateSentry()
 			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
 			//{
 				HostageController(target.Controller).GoToSentry();
+				
+				PlaySound (sentryVoice,,,true,);
+				
 				CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
 			//}
 		}
@@ -141,6 +150,9 @@ exec function CreateMine()
 			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
 			//{
 				HostageController(target.Controller).GoToRemoteMine();
+				
+				PlaySound (sentryVoice,,,true,);
+				
 				CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
 			//}
 		}
@@ -195,6 +207,11 @@ function debug(String s){
 
 defaultproperties
 {
+
+	wardVoice = SoundCue'Stockholm_Sounds.Ward1_Cue';
+	sentryVoice = SoundCue'Stockholm_Sounds.Turret1_Cue';
+	mineVoice = SoundCue'Stockholm_Sounds.RemoteDetonator_Cue';
+
   //Points to the UTFamilyInfo class for your custom character
   CharacterClass=class'UTFamilyInfo_Liandri_Male'
 }
