@@ -440,7 +440,8 @@ local Actor dest;
      `log(Pawn$"attempting navigation");
      
      if( NavigationHandle.ActorReachable( dest) ){
-        FlushPersistentDebugLines();
+
+	 FlushPersistentDebugLines();
          Pawn.GroundSpeed = 200;
          lookAt(dest);
          MoveToward(dest,dest);
@@ -1028,4 +1029,5 @@ defaultproperties
 
 
   hostageScream = SoundCue'Stockholm_Sounds.HostageFlee1_Cue';
+  
 }

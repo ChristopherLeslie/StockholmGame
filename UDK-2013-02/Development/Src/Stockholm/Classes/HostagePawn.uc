@@ -1,6 +1,9 @@
 class HostagePawn extends StockholmPawn; 
 
 
+Var SoundCue hostageCapture;
+	
+
 var float ElapsedTime;
 
 var CaptorPawn captorCapturingMe;
@@ -72,6 +75,11 @@ simulated function switchToTeam(byte team_number){
 
   if(team_number == game.blueTeamNum){
     `log("I've switched to the blue team");
+	
+	
+	
+	PlaySound (hostageCapture,,,true,Location);
+
     teamNum = game.blueTeamNum;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VBlue');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VBlue');
@@ -166,4 +174,7 @@ defaultproperties
  teamNum = 255
 
  sightRadius = 1400;
+
+ hostageCapture = SoundCue'Stockholm_Sounds.HostageCapture1_Cue';
+
 }
