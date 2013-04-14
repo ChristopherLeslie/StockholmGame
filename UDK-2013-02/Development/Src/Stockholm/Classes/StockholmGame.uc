@@ -131,8 +131,8 @@ defaultproperties
 
  	redHostages = 0
 	blueHostages = 0
-	neutralHostages = 2
-	totalHostages = 2
+	neutralHostages = 0
+	totalHostages = 0
 
  	redTeamBaseInitialized = False
  	blueTeamBaseInitialized = False
