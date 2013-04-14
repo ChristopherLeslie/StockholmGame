@@ -453,6 +453,8 @@ local Actor dest;
      debug("FOLLOWING");
 
     dest = myCaptor; //GetALocalPlayerController().Pawn;
+
+
     wayPoint = simplePathFindToActor(dest);
                   //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
     runInDirectionOf(wayPoint);
@@ -1037,4 +1039,5 @@ defaultproperties
 
 
   hostageScream = SoundCue'Stockholm_Sounds.HostageFlee1_Cue';
+  
 }
