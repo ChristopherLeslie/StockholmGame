@@ -35,6 +35,7 @@ var bool captured;
 var int SentryDistanceToTargetStart;
 var int SentryDistanceToTargetStop;
 var int SentryMaxConsecutiveMisses;
+var Rotator currentRotation;
 
 var int WardingDistance;
 
@@ -779,7 +780,13 @@ function GoToRemoteMine()
 
 State RemoteMine
 {
+	local Rotator final_rot;
 	Begin:
+		//final_rot = Rotator(vect(0,0,1)); //Look straight up
+		//Pawn.SetViewRotation(final_rot);
+		//Pawn.StartFire(1);
+		`log("I'm a remote mine!");
+		sleep(0.5);
 		GoToState('Fleeing');
 }
 
@@ -807,7 +814,16 @@ State Sentry
 	local Vector hitNormal;
 	local float scale;
 	local int successiveMisses;
+	
+	event SeePlayer(Pawn seen){
+		if(!seen.isA('HostagePawn')){
+			`log("I see youuuuuuuu");
+			currentPrioritizedTargetToFireAt = seen;
+		}
+	}
+	
 	Begin:
+		stopMoving();
 		if(currentPrioritizedTargetToFireAt == none
 			   || currentPrioritizedTargetToFireAt.health <= 0)
 		{
@@ -815,7 +831,12 @@ State Sentry
 			successiveMisses = 0;
 			currentPrioritizedTargetToFireAt = none;
 			Pawn.StopFire(1);
-			foreach WorldInfo.AllPawns(class'Pawn', P)
+			Pawn.LockDesiredRotation(false,false);
+			Pawn.SetDesiredRotation(currentRotation,true,true,0.25);
+			currentRotation.pitch = currentRotation.pitch + (32677/13); 
+			currentRotation.yaw = currentRotation.yaw + (32677/13);
+			//`log("Rotating to "$currentRotation);
+			/*foreach WorldInfo.AllPawns(class'Pawn', P)
 			{
 				if(P.isA('CaptorPawn')) //Captor
 				{ 
@@ -854,7 +875,8 @@ State Sentry
 						}
 					}
 				}
-			}
+			}*/
+			sleep(0.3);
 		}
 		else
 		{
@@ -888,8 +910,8 @@ State Sentry
 					currentPrioritizedTargetToFireAt = none;
 				}
 			}
+			sleep(0.1);
 		}
-		sleep(0.1);
 		GoTo('Begin');
 }
 
@@ -926,6 +948,7 @@ State Warding
 	local Vector unitVector;
 	local Vector notunitvector;
 	Begin:
+		stopMoving();
 		foreach WorldInfo.AllPawns(class'Pawn', P)
 		{
 			if(P.isA('CaptorPawn')) //Captor
@@ -1028,7 +1051,7 @@ defaultproperties
   waitPriority = 0
   nothingPriority = -1
   //continueCurrentAction = false
-  bIsPlayer=True
+  bIsPlayer=True;
   SentryDistanceToTargetStart = 400;
   SentryDistanceToTargetStop = 3000;
   SentryMaxConsecutiveMisses = 20;
