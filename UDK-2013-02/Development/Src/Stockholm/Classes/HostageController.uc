@@ -48,6 +48,15 @@ simulated event PostBeginPlay()
   Pawn.bAvoidLedges=true;
 }
 
+simulated event Possess(Pawn inPawn, bool bVehicleTransition)
+{
+
+  Super.Possess(inPawn, bVehicleTransition);
+
+  HostagePawn(Pawn).teamNum = 255;//Neutral
+
+}
+
 function LookAt(Actor a){
 
 local Rotator final_rot;
