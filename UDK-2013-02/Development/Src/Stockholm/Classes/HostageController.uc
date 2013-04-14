@@ -123,10 +123,6 @@ function stopMoving(){
   bPreciseDestination = false;
 }
 
-function int distTo(Actor other){
-  return VSize2D(Pawn.Location-other.Location);
-}
-
 
 function reactToSeeingAPlayer(Pawn seen){
   if(seen.isA('HostagePawn')){
@@ -249,7 +245,7 @@ State Roaming{
       return;
     }
 
-    if(distTo(seen) < Pawn.sightRadius){    //it's a captorpawn, and we don't roam while on the same team with any captor 
+    if(distToActor(seen) < Pawn.sightRadius){    //it's a captorpawn, and we don't roam while on the same team with any captor 
       pawnImThinkingAbout = seen;
       goToState('Cautious');    //so it is also not on our team
     }
@@ -365,7 +361,7 @@ State Cautious{
    
     pawnImThinkingAbout = seen;
 
-    if(distTo(seen) < 1000){
+    if(distToActor(seen) < 1000){
       goToState('BackingUp');
     }
     else{
@@ -516,9 +512,9 @@ State BackingUp{
   GoTo('ContinueBackingUp');
 
   ContinueBackingUp:
-    debug("continuing to back up.  dist = "$distTo(pawnToFlee));
+    debug("continuing to back up.  dist = "$distToActor(pawnToFlee));
 
-    distance = distTo(pawnToFlee);
+    distance = distToActor(pawnToFlee);
     if(distance > 1200){
       goToState('Cautious');
     }
@@ -605,7 +601,7 @@ State Fleeing{
 
   ContinueFleeing:
 
-    distance = distTo(player);
+    distance = distToActor(player);
     if(distance < 600){                                       //we hear the footsteps
       estimated_player_location = player.Location;
       certainty = 100;
@@ -707,45 +703,10 @@ State RemoteMine
     DrawDebugLine(Pawn.Location,dest,255,0,0,true);
     DrawDebugSphere(dest,16,20,255,0,0,true);
 
-    lookAtVector(dest);
-     
-    if( NavigationHandle.PointReachable( dest) ){
-		//`log("Moving to "$dest);
-		MoveTo(dest);
-    }
-    else if( FindNavMeshPathToLocation(dest) ){
-      `log(Pawn$" finding nav mesh path");
-        NavigationHandle.SetFinalDestination(dest);
-        FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
-
-        // move to the first node on the path
-        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
-        {
-          `log(Pawn$" moving to temp dest");
-          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-          DrawDebugSphere(TempDest,16,20,255,0,0,true);
-
-
-          do{
-            runInDirectionOf(TempDest);
-            sleep(0.5);
-          }
-          until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
-          VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-          
-        }
-        else{
-          `log(Pawn$" failure to do any path planning to get to "$dest);
-          debug("failure case 1");
-          sleep(1);
-        }
-    }
-    else{
-      debug("failure case 2");
-      sleep(1);
-    }
-
+    
+    wayPoint = simplePathFindToPoint(dest);
+    runInDirectionOf(wayPoint);
+    lookAtVector(wayPoint);
 
    
     goTo('Roam');
@@ -1009,6 +970,9 @@ State GoingHome{
 
   ContinuingToGoHome:
     debug("GOING HOME");
+      if(distToActor(dest) < 500){
+        GoToState('AtHome');
+      }
      wayPoint = simplePathFindToActor(dest);
     runInDirectionOf(wayPoint);
     lookAtVector(wayPoint);
@@ -1016,11 +980,19 @@ State GoingHome{
 
         GoTo('ContinuingToGoHome');
 
-
-
-
 }
 
+State AtHome{
+  event EndState(name nextStateName){
+    if(HostagePawn(Pawn).bFeigningDeath){
+      HostagePawn(Pawn).FeignDeath();
+    }
+  }
+  Begin:
+    GoTo('Lounge');
+  Lounge:
+    HostagePawn(Pawn).FeignDeath();
+}
 
 
 

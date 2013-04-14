@@ -4,6 +4,11 @@ var byte redTeamNum;
 var byte blueTeamNum;
 var byte neutralTeamNum;
 
+var int redHostages;
+var int blueHostages;
+var int neutralHostages;
+var int totalHostages;
+
 var PathNode PrivateBlueTeamBase;
 var PathNode PrivateRedTeamBase;
 
@@ -19,6 +24,40 @@ event PostBeginPlay()
 	`log("We are playing a game of STOCKHOLM");
 	
 }
+function int hostagesByTeam(byte team_number){
+	if(team_number == redTeamNum){
+		return redHostages;
+	}
+	else if(team_number == blueTeamNum){
+		return blueHostages;
+	}
+	else if(team_number == neutralTeamNum){
+		return neutralHostages;
+	}
+	dispHostageNums();
+}
+function bool teamByNumHasAllHostages(byte team_number){
+	return hostagesByTeam(team_number) >= totalHostages;
+	dispHostageNums();
+}
+
+function killHostage(byte team_number){
+	if(team_number == redTeamNum){
+		redHostages -=1;
+	}
+	else if(team_number == blueTeamNum){
+		blueHostages -=1;
+	}
+	else{
+		neutralHostages -=1;
+	}
+	totalHostages -=1;
+	dispHostageNums();
+}
+function dispHostageNums(){
+	Broadcast(self,"Red: "$redHostages$". Blue: "$blueHostages$". Neut: "$neutralHostages$". Total: "$totalHostages);
+}
+
 
 function PathNode blueTeamBase(){
 	local PathNode node;
@@ -52,7 +91,7 @@ function PathNode redTeamBase(){
 
 function AddDefaultInventory( pawn PlayerPawn )
 {
-	local int i;
+	
 	//-may give the physics gun to non-bots
 	//PlayerPawn.DefaultInventory = class'none';
 	//if(PlayerPawn.IsHumanControlled() )
@@ -89,6 +128,11 @@ defaultproperties
 	redTeamNum = 0
  	blueTeamNum = 1
  	neutralTeamNum = 255
+
+ 	redHostages = 0
+	blueHostages = 0
+	neutralHostages = 2
+	totalHostages = 2
 
  	redTeamBaseInitialized = False
  	blueTeamBaseInitialized = False

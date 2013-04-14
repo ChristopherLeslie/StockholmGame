@@ -2,7 +2,29 @@ class StockholmController extends GameAIController;
 
 
 var float forward_looking_distance;
+var StockholmGame game;
 
+
+
+
+simulated event PostBeginPlay()
+{
+
+  game = StockholmGame(WorldInfo.Game);
+     super.PostBeginPlay();
+   
+}
+
+ //StockholmGame(WorldInfo.Game).totalHostages+=1;
+    //StockholmGame(WorldInfo.Game).neutralHostages+=1;
+
+
+function int distToActor(Actor other){
+  return VSize2D(Pawn.Location-other.Location);
+}
+function int distToVector(Vector other){
+  return VSize2D(Pawn.Location-other);
+}
 
 
 function runInDirectionOf(Vector destination){
@@ -168,7 +190,7 @@ function Vector turn_until_you_can_run(){
 
 
 function debug(String s){
-	WorldInfo.Game.Broadcast(self,s);
+	//WorldInfo.Game.Broadcast(self,s);
 }
 
 
@@ -211,4 +233,5 @@ function debug(String s){
 
 defaultProperties{
 	  forward_looking_distance = 250;
+
 }

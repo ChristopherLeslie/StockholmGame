@@ -143,6 +143,7 @@ simulated function ProcessBeamHit(vector StartTrace, vector AimDir, out ImpactIn
 function create_beam_from_me_to_you(CaptorPawn captorP, HostagePawn hostageP){
 	BeamAttachActor = hostageP;
 	linkedTo = hostageP;
+
 	process_beam_from_me_to_you(captorP,hostageP);
 }
 
@@ -150,7 +151,7 @@ function process_beam_from_me_to_you(CaptorPawn captorP, HostagePawn hostageP){
 	local Vector PushForce;
 	local TraceHitInfo hitInfo;
 	local HostageController hostageC;
-
+	WorldInfo.Game.Broadcast(self,captorP$" shot "$hostageP);
 	hostageC = HostageController(hostageP.Controller);
 
 	hostageC.pawnImThinkingAbout = captorP;

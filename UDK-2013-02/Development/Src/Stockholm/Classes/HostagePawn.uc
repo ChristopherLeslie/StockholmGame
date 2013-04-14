@@ -14,7 +14,10 @@ simulated event PostBeginPlay()
 {
   setDrawScale(0.80f);
   `log("hello, I'm a bot");
+
    Super.PostBeginPlay();
+   StockholmGame(WorldInfo.Game).neutralHostages+=1;
+   StockholmGame(WorldInfo.Game).totalHostages+=1;
 }
 
 
@@ -45,26 +48,36 @@ simulated function receivePersuasion(CaptorPawn captor){
   
   increaseLoyalty(captor.shTeamNum());
   captorCapturingMe = captor;
-  `log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
+  //`log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
 }
 
 simulated function switchToTeam(byte team_number){
   local StockholmGame game;
+  local byte prev_team;
 
   game = StockholmGame(WorldInfo.Game);
+  prev_team = shTeamNum();
+  if(prev_team == game.redTeamNum){
+    game.redHostages -= 1;
+  }
+  else if(prev_team == game.blueTeamNum){
+    game.blueHostages -= 1;
+  }
+  else{
+    game.neutralHostages-=1;
+  }
 
   if(team_number != game.neutralTeamNum){ //The Hostage joined a team
     myCaptor = captorCapturingMe;
     HostageController(Controller).capturedBy(myCaptor);
     HostageController(Controller).GoToState('Following');
   }
-  else{ //The Hostage Became Neutral
-    HostageController(Controller).GoToState('Fleeing');
-  }
+ 
 
   if(team_number == game.redTeamNum){
     `log("I've switched to the red team.");
     teamNum = game.redTeamNum;
+    game.redHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VRed');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VRed');
 
@@ -73,6 +86,7 @@ simulated function switchToTeam(byte team_number){
   if(team_number == game.blueTeamNum){
     `log("I've switched to the blue team");
     teamNum = game.blueTeamNum;
+    game.blueHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VBlue');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VBlue');
 
@@ -81,9 +95,10 @@ simulated function switchToTeam(byte team_number){
   if(team_number == game.neutralTeamNum){
     `log("I've switched to the neutral team");
     teamNum = game.neutralTeamNum;
+    game.neutralHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_V01');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_V01');
-
+     HostageController(Controller).GoToState('Fleeing');
   }
 
 
@@ -145,10 +160,15 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
   if(damageAmount > 0){
     HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
     HostageController(Controller).GoToState('Fleeing');
+    if(Health < 1){
+      die();
+    }
   }
 }
 
-
+function die(){
+  StockholmGame(WorldInfo.Game).killHostage(shTeamNum());
+}
 
 
 
