@@ -82,7 +82,7 @@ function Vector simplePathFindToPoint(Vector dest){
      	return(dest);
     }
      
-	dest.y += 100;
+	
 	         	 DrawDebugSphere(TempDest,16,20,255,0,255,true);
    	if( FindNavMeshPathToLocation(dest) ){
       	`log(Pawn$" finding nav mesh path");

@@ -129,33 +129,6 @@ function stopMoving(){
 
 
 
-function bool FindNavMeshPathToActor(Actor dest)
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardGoal( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtActor( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
-
-function bool FindNavMeshPathToLocation(Vector dest)
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardPoint( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtLocation( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
 
  simulated event GetPlayerViewPoint(out vector out_Location, out Rotator out_Rotation){
     // AI does things from the Pawn
@@ -237,11 +210,11 @@ State ApproachTargetHostage{
 	    if(distToActor(hostageTarget) < close_enough_to_capture){
 	    	GoToState('Capturing');
 	    }
-
+	    	DrawDebugSphere(hostageTarget.Location,32,20,0,0,255,true);
 		wayPoint = simplePathFindToActor(hostageTarget);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
-		sleep(0.5);
+		sleep(0.7);
 
 	GoTo('ContinueApproaching');
 
@@ -268,7 +241,7 @@ State Capturing{
 	local ImpactInfo testImpact;
 	local HostagePawn nullHP;	
 	local HostagePawn target;
-	local Vector TempDest;
+	
 
 
 	Begin:
@@ -286,7 +259,7 @@ State Capturing{
 		wayPoint = simplePathFindToActor(target);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
-		sleep(0.3);
+		sleep(0.7);
 
 		if(distToActor(target) > close_enough_to_capture || !canSeeByPoints(Pawn.Location,target.Location,Pawn.Rotation)){
 			Pawn.StopFire(1);
