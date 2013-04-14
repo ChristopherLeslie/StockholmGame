@@ -29,6 +29,12 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	CaptorPawn(Pawn).teamNum = 1; //Blue
 }
 
+
+function bool captured(HostagePawn hostageP){
+	// alive and same teams
+	return ((hostageP.Health > 0) && StockholmPawn(Pawn).sameTeam(hostageP));
+}
+
 exec function CreateWard()
 {
 	local vector loc, norm, end;
@@ -52,7 +58,7 @@ exec function CreateWard()
 		{
 			`log("Hit a hostage!");
 			target = HostagePawn(traceHit);
-			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
 			//{
 				HostageController(target.Controller).GoToWard();
 				CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
@@ -92,7 +98,7 @@ exec function CreateSentry()
 		{
 			`log("Hit a hostage!");
 			target = HostagePawn(traceHit);
-			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
 			//{
 				HostageController(target.Controller).GoToSentry();
 				CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
@@ -132,7 +138,7 @@ exec function CreateMine()
 		{
 			`log("Hit a hostage!");
 			target = HostagePawn(traceHit);
-			//if(Pawn.getTeamNum()==target.getTeamNum()) //Commented for test purposes only!
+			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
 			//{
 				HostageController(target.Controller).GoToRemoteMine();
 				CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
@@ -149,12 +155,43 @@ exec function CreateMine()
 	}
 }
 
+exec function SendHostageHome(){
+	local HostagePawn hostageP;
+	local bool isGoingHome;
+	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
+			isGoingHome = HostageController(hostageP.Controller).getStateName() == 'GoingHome';
+			if(captured(hostageP) && !isGoingHome){
+				HostageController(hostageP.Controller).GoHome();
+				return;
+			}
+	}
+}
+
+exec function FollowMe(){
+	local HostagePawn hostageP;
+	local bool isFollowing;
+
+	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
+		isFollowing = HostageController(hostageP.Controller).getStateName() == 'Following';
+
+		if(captured(hostageP)&& !isFollowing){
+			HostageController(hostageP.Controller).followCaptor();
+			return;
+		}
+		
+	}
+}
 
 
-simulated function byte getTeamNum(){
+
+
+simulated function byte shTeamNum(){
   return CaptorPawn(Pawn).teamNum;
 }
 
+function debug(String s){
+	WorldInfo.Game.Broadcast(self,s);
+}
 
 defaultproperties
 {

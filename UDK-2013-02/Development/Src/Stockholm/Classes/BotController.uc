@@ -1,4 +1,4 @@
-class BotController extends GameAIController;
+class BotController extends StockholmController;
 
 var class<UTFamilyInfo> CharacterClass; 
 var MaterialInterface defaultMaterial0; //for some reason necessary for setting the materials later even though I don't ever define what the defaultMaterial0 is
@@ -43,7 +43,7 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 }
 
-simulated function byte getTeamNum(){
+simulated function byte shTeamNum(){
   return CaptorPawn(Pawn).teamNum;
 }
 function int distTo(Actor other){

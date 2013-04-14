@@ -4,6 +4,12 @@ var byte redTeamNum;
 var byte blueTeamNum;
 var byte neutralTeamNum;
 
+var PathNode PrivateBlueTeamBase;
+var PathNode PrivateRedTeamBase;
+
+var bool blueTeamBaseInitialized;
+var bool redTeamBaseInitialized;
+
 
 
 event PostBeginPlay()
@@ -14,6 +20,32 @@ event PostBeginPlay()
 	
 }
 
+function PathNode blueTeamBase(){
+	local PathNode node;
+	if(blueTeamBaseInitialized){
+		return PrivateBlueTeamBase;
+	}
+	foreach AllActors( class 'PathNode', node) { //iterate through PlayerPawns
+		if(node.tag == 'blueTeamBase'){
+			PrivateBlueTeamBase = node;
+			blueTeamBaseInitialized = true;
+			return node;
+		}
+	} 
+}
+function PathNode redTeamBase(){
+	local PathNode node;
+	if(redTeamBaseInitialized){
+		return PrivateRedTeamBase;
+	}
+	foreach AllActors( class 'PathNode', node) { //iterate through PlayerPawns
+		if(node.tag == 'redTeamBase'){
+			PrivateRedTeamBase = node;
+			redTeamBaseInitialized = true;
+			return node;
+		}
+	} 
+}
 
 
 
@@ -58,4 +90,6 @@ defaultproperties
  	blueTeamNum = 1
  	neutralTeamNum = 255
 
+ 	redTeamBaseInitialized = False
+ 	blueTeamBaseInitialized = False
 }

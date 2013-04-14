@@ -43,7 +43,7 @@ event Tick(float DeltaTime)
 
 simulated function receivePersuasion(CaptorPawn captor){
   
-  increaseLoyalty(captor.getTeamNum());
+  increaseLoyalty(captor.shTeamNum());
   captorCapturingMe = captor;
   `log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
 }
