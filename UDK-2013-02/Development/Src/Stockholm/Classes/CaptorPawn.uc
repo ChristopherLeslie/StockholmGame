@@ -53,6 +53,10 @@ function IncMine(SeqAct_IncMine action)
 	MinePickups = MinePickups + 1;
 }
 
+function AddDefaultInventory()
+{
+    InvManager.CreateInventory(class'Stockholm.CaptorGun');
+}
 
 defaultproperties
 {
