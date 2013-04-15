@@ -6,6 +6,7 @@ var int redLoyalty;
 var int blueLoyalty;
 var int maxLoyalty;
 
+var SoundCue killVoice;
 
 simulated event PostBeginPlay()
 {
@@ -70,15 +71,15 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
   
   if(EventInstigator.isA('PlayerController')){
 
-      if(damageAmount > 0){
-        //you hit the enemy
-        if(Health < 20){
-          //you gravely hurt the enemy
-        }
-        if(Health < 0){
-          //you killed the enemy
-        }
-      }
+    if(Health < 1){
+      //i killed an enemy
+	  PlaySound (killVoice,,,true,);
+    }
+
+	else{
+		//i hurt an enemy
+	}
+	
   }
 
 }
@@ -90,5 +91,7 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 
 defaultproperties
 {
+
+	killVoice = SoundCue'Stockholm_Sounds.kill5_Cue';
 
 }

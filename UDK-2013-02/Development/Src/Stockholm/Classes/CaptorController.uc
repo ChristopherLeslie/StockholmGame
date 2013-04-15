@@ -6,6 +6,7 @@ var MaterialInterface defaultMaterial0; //for some reason necessary for setting 
 var SoundCue wardVoice;
 var SoundCue mineVoice;
 var SoundCue sentryVoice;
+var SoundCue startVoice;
 
 simulated event PostBeginPlay()
 {
@@ -30,6 +31,10 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	}
 
 	CaptorPawn(Pawn).teamNum = 1; //Blue
+	//start playing
+	
+	PlaySound (startVoice,,,true,);
+	
 }
 
 
@@ -195,6 +200,7 @@ exec function FollowMe(){
 	}
 }
 //////////////////////////////////////////////CHRIS///////////////////////////////////
+/*
 function Vector LocationImLookingAt(){
 		local vector loc, norm, end;
 	local TraceHitInfo hitInfo;
@@ -214,6 +220,7 @@ function Vector LocationImLookingAt(){
 	WorldInfo.Game.Broadcast(self,"looking at "$tracehit);
 	return loc;
 }
+*/
 //////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -228,7 +235,8 @@ function debug(String s){
 
 defaultproperties
 {
-
+	
+	startVoice = SoundCue'Stockholm_Sounds.Start1_Cue';
 	wardVoice = SoundCue'Stockholm_Sounds.Ward1_Cue';
 	sentryVoice = SoundCue'Stockholm_Sounds.Turret1_Cue';
 	mineVoice = SoundCue'Stockholm_Sounds.RemoteDetonator_Cue';
