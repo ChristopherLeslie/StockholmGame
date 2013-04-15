@@ -131,7 +131,7 @@ exec function CreateSentry()
 
 exec function CreateMine()
 {
-	local vector loc, norm, end;
+	/*local vector loc, norm, end;
 	local TraceHitInfo hitInfo;
 	local Actor traceHit;
 	local HostagePawn target;
@@ -156,7 +156,7 @@ exec function CreateMine()
 			//{
 				HostageController(target.Controller).GoToRemoteMine();
 				
-				PlaySound (sentryVoice,,,true,);
+				PlaySound (mineVoice,,,true,);
 				
 				CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
 			//}
@@ -164,6 +164,37 @@ exec function CreateMine()
 		else
 		{
 			`log("Missed all hostages");
+		}
+	}
+	else
+	{
+		`log("Not enough mine pickups");
+	}*/
+	local HostagePawn hpawn;
+	local HostagePawn hostageP;
+	local bool isFollowing;
+	hpawn = None;
+	`log("Trying to create a mine");
+	`log("Pawn has "$CaptorPawn(Pawn).MinePickups$" mine pickups");
+	if(CaptorPawn(Pawn).MinePickups > 0)
+	{
+		foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
+			isFollowing = HostageController(hostageP.Controller).getStateName() == 'Following';
+
+			if(captured(hostageP)&& isFollowing){
+				hpawn = hostageP;
+			}
+		}
+		if(hpawn == None)
+		{
+			`log("No pawns are following you!");
+		}
+		else
+		{
+			`log("RemoteMineGo!");
+			HostageController(hpawn.Controller).GoToRemoteMine();
+			PlaySound (mineVoice,,,true,);
+			CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
 		}
 	}
 	else
