@@ -785,8 +785,11 @@ State RemoteMineWandering
     `log(Pawn$" sees "$seen);
     if(seen.isA('CaptorPawn'))
 	{
-	  MineTargetPawn = seen;
-	  GoToState('RemoteMineAttacking');
+		if(!StockholmPawn(Pawn).sameTeam(StockholmPawn(seen)))
+		{
+			MineTargetPawn = seen;
+			GoToState('RemoteMineAttacking');
+		}
     }
   }
   
@@ -800,7 +803,7 @@ State RemoteMineWandering
 
   Roam:
     FlushPersistentDebugLines();
-
+	`log("Here");
     //random = VRand();
     //random = Pawn.Location + random * 250;
     //random.z = Pawn.Location.z;
@@ -824,7 +827,7 @@ State RemoteMineWandering
     wayPoint = simplePathFindToPoint(dest);
     runInDirectionOf(wayPoint);
     lookAtVector(wayPoint);
-
+	sleep(0.5);
    
     goTo('Roam');
   /*local Vector dest;
