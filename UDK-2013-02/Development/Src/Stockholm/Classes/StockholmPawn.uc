@@ -73,11 +73,11 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 
     if(Health < 1){
       //i killed an enemy
-	  PlaySound (killVoice,,,true,);
+	  PlaySound (killVoice,,,true,EventInstigator.Pawn.Location);
     }
 
 	else{
-		//i hurt an enemy
+		//i hurt an enemy couldnt escape bullets
 	}
 	
   }

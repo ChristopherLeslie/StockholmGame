@@ -69,16 +69,16 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 	if(Controller.isA('PlayerController')){
 		if(Health < 1){
 		  //death noises
-		  PlaySound (deathVoice,,,,);
+		  PlaySound (deathVoice,,,,Location);
 		  
 		}
 		else if(Health < 20){
 		  //GUSHIN OUT LIKE ONE OF THEM CANDIES
-		  //PlaySound (Voice,,,true,);
+		  //PlaySound (Voice,,,true,Location);
 		}
 		else{
 			//GOT ME!
-			PlaySound (injuryVoice,,,true,);
+			PlaySound (injuryVoice,,,true,Location);
 		}
     }
   }
