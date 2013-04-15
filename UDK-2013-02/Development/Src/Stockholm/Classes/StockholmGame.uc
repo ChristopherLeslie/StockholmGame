@@ -98,20 +98,10 @@ function AddDefaultInventory( pawn PlayerPawn )
 	if(PlayerPawn.isA('CaptorPawn'))
 	{
 		PlayerPawn.CreateInventory(class'CaptorGun',true);
-		PlayerPawn.AddDefaultInventory();
+		//PlayerPawn.AddDefaultInventory();
 	}
-/*
-	for (i=0; i<DefaultInventory.Length; i++)
-	{
-		//-Ensure we don't give duplicate items
-		if (PlayerPawn.FindInventoryType( DefaultInventory[i] ) == None)
-		{
-			//-Only activate the first weapon
-			PlayerPawn.CreateInventory(DefaultInventory[i], (i > 0));
-		}
 
-	}
-*/
+
 	`Log("Adding inventory");
 	
 
@@ -124,6 +114,7 @@ defaultproperties
 {
 	DefaultPawnClass = class'CaptorPawn'
 	PlayerControllerClass = class'CaptorController'
+    
 
 	redTeamNum = 0
  	blueTeamNum = 1

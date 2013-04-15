@@ -83,11 +83,11 @@ function Vector simplePathFindToPoint(Vector dest){
     }
      
 	
-	         	 DrawDebugSphere(TempDest,16,20,255,0,255,true);
+	         	 DrawDebugSphere(dest,16,20,255,0,255,true);
    	if( FindNavMeshPathToLocation(dest) ){
       	`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest);
-        FlushPersistentDebugLines();
+        //FlushPersistentDebugLines();
         NavigationHandle.DrawPathCache(,TRUE);
 
         // move to the first node on the path
@@ -97,13 +97,14 @@ function Vector simplePathFindToPoint(Vector dest){
          	 DrawDebugSphere(TempDest,16,20,255,0,0,true);
           	return TempDest;
         }
+        else{
+        `log(Pawn$" failure to do any path planning to get to "$dest);
+        debug("failure case 1");
+        return turn_until_you_can_run();
+        
+        }
     }
-    else{
-      	`log(Pawn$" failure to do any path planning to get to "$dest);
-      	debug("failure case 1");
-      	return turn_until_you_can_run();
-      	
-    }
+    
         
     
     
@@ -168,7 +169,7 @@ function Vector turn_until_you_can_run(){
 
     dest_attempt = Pawn.Location + normal(vector(xyOrientation))*forward_looking_distance;
 
-    DrawDebugLine(Pawn.Location,dest_attempt,255,0,0,true);
+    //DrawDebugLine(Pawn.Location,dest_attempt,255,0,0,true);
 
 
   }until( adjustment_counter > 400 || NavigationHandle.PointReachable(dest_attempt));

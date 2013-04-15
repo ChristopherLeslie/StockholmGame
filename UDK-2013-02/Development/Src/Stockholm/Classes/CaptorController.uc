@@ -182,7 +182,27 @@ exec function FollowMe(){
 		
 	}
 }
+//////////////////////////////////////////////CHRIS///////////////////////////////////
+function Vector LocationImLookingAt(){
+		local vector loc, norm, end;
+	local TraceHitInfo hitInfo;
+	local Actor traceHit;
+	local HostagePawn hostage;
 
+	local Vector viewPosition;
+	local Rotator viewRotation;
+
+	WorldInfo.Game.Broadcast(self,"looking at...");
+
+	GetPlayerViewPoint(viewPosition,viewRotation);
+
+	end = Pawn.Location + normal(vector(viewRotation))*10000; // trace to 'infinity'
+	traceHit = trace(loc, norm, end, viewPosition, true,, hitInfo);
+
+	WorldInfo.Game.Broadcast(self,"looking at "$tracehit);
+	return loc;
+}
+//////////////////////////////////////////////////////////////////////////////////////
 
 
 

@@ -58,6 +58,24 @@ function AddDefaultInventory()
     InvManager.CreateInventory(class'Stockholm.CaptorGun');
 }
 
+
+event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
+{
+  Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
+  if(damageAmount > 0){
+    //GOT ME!
+    if(Health < 20){
+      //GUSHIN OUT LIKE ONE OF THEM CANDIES
+    }
+    if(Health < 0){
+      //death noises
+    }
+  }
+}
+
+
+
+
 defaultproperties
 {
   //set defaults for regeneration properties

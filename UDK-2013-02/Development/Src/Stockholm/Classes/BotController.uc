@@ -65,8 +65,8 @@ function HostagePawn closestHostage(){
 	local float distToHostage;
 	local HostagePawn hostageP;
 
-	//Smell them from up to 10,000 away
-	maxRange = 10000;
+	//Smell them from up to 100,000 away
+	maxRange = 100000;
 	searchRange = maxRange;
 
 	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
@@ -210,7 +210,7 @@ State ApproachTargetHostage{
 	    if(distToActor(hostageTarget) < close_enough_to_capture){
 	    	GoToState('Capturing');
 	    }
-	    	DrawDebugSphere(hostageTarget.Location,32,20,0,0,255,true);
+	    	DrawDebugSphere(hostageTarget.Location,16,20,0,0,255,true);
 		wayPoint = simplePathFindToActor(hostageTarget);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);

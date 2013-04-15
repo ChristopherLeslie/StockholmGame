@@ -64,7 +64,24 @@ simulated function shotBy(Pawn antagonist){
 
 
 
+event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
+{
+  Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
+  
+  if(EventInstigator.isA('PlayerController')){
 
+      if(damageAmount > 0){
+        //you hit the enemy
+        if(Health < 20){
+          //you gravely hurt the enemy
+        }
+        if(Health < 0){
+          //you killed the enemy
+        }
+      }
+  }
+
+}
 
 
 
