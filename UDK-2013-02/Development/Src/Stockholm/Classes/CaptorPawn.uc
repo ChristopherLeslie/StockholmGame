@@ -7,6 +7,8 @@ var int WardPickups;
 var int SentryPickups;
 var int MinePickups;
 
+var SoundCue deathVoice;
+var SoundCue injuryVoice;
 
 simulated event PostBeginPlay()
 {
@@ -63,12 +65,21 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 {
   Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
   if(damageAmount > 0){
-    //GOT ME!
-    if(Health < 20){
-      //GUSHIN OUT LIKE ONE OF THEM CANDIES
-    }
-    if(Health < 0){
-      //death noises
+  
+	if(Controller.isA('PlayerController')){
+		if(Health < 1){
+		  //death noises
+		  PlaySound (deathVoice,,,,Location);
+		  
+		}
+		else if(Health < 20){
+		  //GUSHIN OUT LIKE ONE OF THEM CANDIES
+		  //PlaySound (Voice,,,true,Location);
+		}
+		else{
+			//GOT ME!
+			PlaySound (injuryVoice,,,true,Location);
+		}
     }
   }
 }
@@ -84,4 +95,8 @@ defaultproperties
   WardPickups = 0
   SentryPickups = 0
   MinePickups = 0
+  
+  deathVoice = SoundCue'Stockholm_Sounds.Death1_Cue';
+  injuryVoice = SoundCue'Stockholm_Sounds.Injured1_Cue';
+  
 }
