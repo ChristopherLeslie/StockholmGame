@@ -33,6 +33,8 @@ var Rotator currentRotation;
 
 var int WardingDistance;
 
+var vector LocationForItemToGoTo;
+
 var Pawn MineTargetPawn;
 var int MineDistanceToBlowUp;
 
@@ -929,8 +931,9 @@ State RemoteMineWandering
 
 
 
-function GoToSentry()
+function GoToSentry(vector destination)
 {
+	LocationForItemToGoTo = destination;
 	GoToState('Sentry');
 }
 
@@ -959,7 +962,20 @@ State Sentry
 	}
 	
 	Begin:
-		stopMoving();
+		wayPoint = simplePathFindToPoint(LocationForItemToGoTo);
+		moveTo(wayPoint);
+		lookAtVector(wayPoint);
+		if(VSize2D(Pawn.Location - LocationForItemToGoTo) < Pawn.GetCollisionRadius())
+		{
+			stopMoving();
+			GoTo('SentryOn');
+		}
+		`log("Somewhere I have to get to first :"$LocationForItemToGoTo);
+		sleep(0.5);
+		GoTo('Begin');
+		
+		
+	SentryOn:
 		if(currentPrioritizedTargetToFireAt == none
 			   || currentPrioritizedTargetToFireAt.health <= 0)
 		{
@@ -1046,9 +1062,9 @@ State Sentry
 					currentPrioritizedTargetToFireAt = none;
 				}
 			}
-			sleep(0.1);
 		}
-		GoTo('Begin');
+		sleep(0.1);
+		GoTo('SentryOn');
 }
 
 
@@ -1062,8 +1078,10 @@ State Sentry
 
 
 
-function GoToWard()
+function GoToWard(vector destination)
 {
+	LocationForItemToGoTo = destination;
+	`log("Warding");
 	GoToState('Warding');
 }
 
@@ -1084,7 +1102,20 @@ State Warding
 	local Vector unitVector;
 	local Vector notunitvector;
 	Begin:
-		stopMoving();
+		wayPoint = simplePathFindToPoint(LocationForItemToGoTo);
+		moveTo(wayPoint);
+		lookAtVector(wayPoint);
+		if(VSize2D(Pawn.Location - LocationForItemToGoTo) < Pawn.GetCollisionRadius())
+		{
+			stopMoving();
+			`log("Now Warding");
+			GoTo('WardingOn');
+		}
+		`log("Somewhere I have to get to first :"$LocationForItemToGoTo);
+		sleep(0.5);
+		GoTo('Begin');
+		
+	WardingOn:
 		foreach WorldInfo.AllPawns(class'Pawn', P)
 		{
 			if(P.isA('CaptorPawn')) //Captor
@@ -1162,7 +1193,7 @@ State Warding
 			}
 		}
 		sleep(0.005);
-		GoTo('Begin');
+		GoTo('WardingOn');
 }
 
 
@@ -1250,6 +1281,8 @@ defaultproperties
   MineDistanceToBlowUp = 200;
 
   forward_looking_distance = 250;
+  
+  LocationForItemToGoTo = vect(0,0,0);
 
 
   hostageScream = SoundCue'Stockholm_Sounds.HostageFlee1_Cue';

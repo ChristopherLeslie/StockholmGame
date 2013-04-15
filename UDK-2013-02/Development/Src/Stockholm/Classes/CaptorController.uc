@@ -40,7 +40,7 @@ function bool captured(HostagePawn hostageP){
 
 exec function CreateWard()
 {
-	local vector loc, norm, end;
+	/*local vector loc, norm, end;
 	local TraceHitInfo hitInfo;
 	local Actor traceHit;
 	local HostagePawn target;
@@ -78,12 +78,44 @@ exec function CreateWard()
 	else
 	{
 		`log("Not enough ward pickups");
+	}*/
+	local HostagePawn hpawn;
+	local HostagePawn hostageP;
+	local bool isFollowing;
+	hpawn = None;
+	`log("Trying to create a mine");
+	`log("Pawn has "$CaptorPawn(Pawn).WardPickups$" sentry pickups");
+	if(CaptorPawn(Pawn).WardPickups > 0)
+	{
+		foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
+			isFollowing = HostageController(hostageP.Controller).getStateName() == 'Following';
+
+			if(captured(hostageP)&& isFollowing){
+				hpawn = hostageP;
+			}
+		}
+		if(hpawn == None)
+		{
+			`log("No pawns are following you!");
+		}
+		else
+		{
+			`log("WardGo!");
+			HostageController(hpawn.Controller).GoToWard(LocationImLookingAt());
+			PlaySound (wardVoice,,,true,);
+			CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
+		}
 	}
+	else
+	{
+		`log("Not enough mine pickups");
+	}
+	
 }
 
 exec function CreateSentry()
 {
-	local vector loc, norm, end;
+	/*local vector loc, norm, end;
 	local TraceHitInfo hitInfo;
 	local Actor traceHit;
 	local HostagePawn target;
@@ -121,6 +153,37 @@ exec function CreateSentry()
 	else
 	{
 		`log("Not enough sentry pickups");
+	}*/
+	local HostagePawn hpawn;
+	local HostagePawn hostageP;
+	local bool isFollowing;
+	hpawn = None;
+	`log("Trying to create a mine");
+	`log("Pawn has "$CaptorPawn(Pawn).SentryPickups$" sentry pickups");
+	if(CaptorPawn(Pawn).SentryPickups > 0)
+	{
+		foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
+			isFollowing = HostageController(hostageP.Controller).getStateName() == 'Following';
+
+			if(captured(hostageP)&& isFollowing){
+				hpawn = hostageP;
+			}
+		}
+		if(hpawn == None)
+		{
+			`log("No pawns are following you!");
+		}
+		else
+		{
+			`log("SentryGo!");
+			HostageController(hpawn.Controller).GoToSentry(LocationImLookingAt());
+			PlaySound (sentryVoice,,,true,);
+			CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
+		}
+	}
+	else
+	{
+		`log("Not enough mine pickups");
 	}
 }
 
