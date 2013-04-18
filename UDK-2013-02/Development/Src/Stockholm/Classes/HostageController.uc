@@ -1282,7 +1282,7 @@ defaultproperties
 
   forward_looking_distance = 250;
   
-  LocationForItemToGoTo = vect(0,0,0);
+  
 
 
   hostageScream = SoundCue'Stockholm_Sounds.HostageFlee1_Cue';
