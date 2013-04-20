@@ -332,7 +332,6 @@ defaultproperties
 	wardVoice = SoundCue'Stockholm_Sounds.Ward1_Cue';
 	sentryVoice = SoundCue'Stockholm_Sounds.Turret1_Cue';
 	mineVoice = SoundCue'Stockholm_Sounds.RemoteDetonator_Cue';
-
   //Points to the UTFamilyInfo class for your custom character
   CharacterClass=class'UTFamilyInfo_Liandri_Male'
 }

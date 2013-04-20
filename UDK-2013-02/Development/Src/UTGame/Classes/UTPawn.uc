@@ -2012,7 +2012,7 @@ function PlayTeleportEffect(bool bOut, bool bSound)
 		SpawnTransEffect(TeamNum);
 		if (bSound)
 		{
-			PlaySound(SpawnSound);
+			//PlaySound(SpawnSound);
 		}
 	}
 	else

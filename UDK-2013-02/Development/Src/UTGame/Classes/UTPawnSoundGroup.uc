@@ -16,6 +16,8 @@ var SoundCue GibSound;
 var SoundCue DrownSound;
 var SoundCue GaspSound;
 
+var SoundCue deathSound;
+
 struct FootstepSoundInfo
 {
 	var name MaterialType;
@@ -110,7 +112,7 @@ static function SoundCue GetLandSound(name MaterialType)
 
 static function PlayDyingSound(Pawn P)
 {
-	P.PlaySound(Default.DyingSound);
+	P.PlaySound(default.deathSound);
 }
 
 /** play sound when taking a hit
@@ -148,6 +150,8 @@ static function PlayDrownSound(Pawn P)
 
 defaultproperties
 {
+	deathSound = SoundCue'Stockholm_Sounds.Death1_Cue';
+	
 	DrownSound=SoundCue'A_Character_IGMale_Cue.Efforts.A_Effort_IGMale_MaleDrowning_Cue'
 	GaspSound=SoundCue'A_Character_IGMale_Cue.Efforts.A_Effort_IGMale_MGasp_Cue'
 

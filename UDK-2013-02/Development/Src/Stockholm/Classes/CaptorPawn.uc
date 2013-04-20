@@ -67,7 +67,7 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
   if(damageAmount > 0){
   
 	if(Controller.isA('PlayerController')){
-		if(Health < 1){
+		if(Health < 20){
 		  //death noises
 		  PlaySound (deathVoice,,,,Location);
 		  

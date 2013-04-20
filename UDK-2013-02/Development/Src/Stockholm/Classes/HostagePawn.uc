@@ -182,11 +182,35 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 {
   Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
   if(damageAmount > 0){
-    HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
-    HostageController(Controller).GoToState('Fleeing');
-    if(Health < 1){
-      die();
-    }
+	if(HostageController(Controller).IsInState('Warding'))
+	{
+		`log("Hurt pawn is a ward");
+		if(Health <100)
+		{
+			Health = 100;
+		}
+	}
+	else if(HostageController(Controller).IsInState('RemoteMineAttacking'))
+	{
+		`log("Hurt pawn is an attacking mine");
+		HostageController(Controller).GoToState('BlowUpAndDie');
+	}
+	else if(HostageController(Controller).IsInState('Sentry'))
+	{
+		`log("Hurt pawn is a sentry");
+		Health = Health + 20;
+		if(Health < 1){
+		  die();
+		}
+	}
+	else
+	{
+		HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
+		HostageController(Controller).GoToState('Fleeing');
+		if(Health < 1){
+		  die();
+		}
+	}
   }
 }
 
