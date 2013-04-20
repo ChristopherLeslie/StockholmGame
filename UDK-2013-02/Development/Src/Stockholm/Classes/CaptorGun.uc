@@ -151,7 +151,7 @@ function process_beam_from_me_to_you(CaptorPawn captorP, HostagePawn hostageP){
 	local Vector PushForce;
 	local TraceHitInfo hitInfo;
 	local HostageController hostageC;
-	WorldInfo.Game.Broadcast(self,captorP$" shot "$hostageP);
+	//WorldInfo.Game.Broadcast(self,captorP$" shot "$hostageP);
 	hostageC = HostageController(hostageP.Controller);
 
 	hostageC.pawnImThinkingAbout = captorP;

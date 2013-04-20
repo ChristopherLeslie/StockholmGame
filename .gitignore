@@ -1,0 +1,26 @@
+#My GitIgnore File
+
+
+#Ignore Everything other than the 2013-02 directory
+*
+!UDK-2013-02
+
+
+#Ignore Binaries
+UDK-2013-02/Binaries/*
+
+#Ignore UDKGame
+UDK-2013-02/UDKGame/*
+#Except StockholmMaps and StockholmSounds
+!UDK-2013-02/UDKGame/Content/Maps/StockholmMaps/*
+!UDK-2013-02/UDKGame/Content/UT3/Sounds/StockholmSounds.upk
+
+
+
+
+#Ignore Config
+UDK-2013-02/UDKGame/Config/*
+#Except DefaultInput and DefaultEngine
+!UDK-2013-02/UDKGame/Config/DefaultInput.ini
+!UDK-2013-02/UDKGame/Config/DefaultEngine.ini
+

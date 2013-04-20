@@ -294,13 +294,11 @@ exec function FollowMe(){
 	}
 }
 //////////////////////////////////////////////CHRIS///////////////////////////////////
-/*
+
 function Vector LocationImLookingAt(){
 		local vector loc, norm, end;
 	local TraceHitInfo hitInfo;
 	local Actor traceHit;
-	local HostagePawn hostage;
-
 	local Vector viewPosition;
 	local Rotator viewRotation;
 
@@ -314,7 +312,7 @@ function Vector LocationImLookingAt(){
 	WorldInfo.Game.Broadcast(self,"looking at "$tracehit);
 	return loc;
 }
-*/
+
 //////////////////////////////////////////////////////////////////////////////////////
 
 
