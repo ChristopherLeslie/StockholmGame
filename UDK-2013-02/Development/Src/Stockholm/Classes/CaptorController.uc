@@ -24,8 +24,13 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	
 	//Set the pawn that CaptorController is controlling to look like a human
 	inPawn.Mesh.SetSkeletalMesh(SkeletalMesh'CH_IronGuard_Male.Mesh.SK_CH_IronGuard_MaleA');
+
+
+	
 	//A lot of textures are missing if we don't do this step
 	//but it functions the same and looks like a crappy human
+
+
 	for( i= 0; i < inPawn.Mesh.SkeletalMesh.Materials.length; i++){
 		inPawn.Mesh.SetMaterial(i,defaultMaterial0);
 	}

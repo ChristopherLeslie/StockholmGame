@@ -163,18 +163,23 @@ simulated function increaseLoyalty(byte team_number){
 }
 event bump(Actor Other, PrimitiveComponent OtherComp, Vector HitNormal){
   local vector dest;
-  local float cdist;
+  local vector before;
+
+  //local float cdist;
    // WorldInfo.Game.Broadcast(self,"getting touched");
 
 
   super.bump(other,othercomp,hitnormal);
   if(other.isA('CaptorPawn')){
     dest = Location - other.Location; //offset
-    WorldInfo.game.Broadcast(self,"c dist: "$cdist);
-    dest = normal(dest)*1; //scaled offset
+   // WorldInfo.game.Broadcast(self,"c dist: "$cdist);
+    dest = normal(dest)*100; //scaled offset
     //dest = Location+dest; //actual destination
-    WorldInfo.Game.Broadcast(self,"getting pushed");
-    Velocity = (Velocity + dest);
+    //WorldInfo.Game.Broadcast(self,"getting pushed");
+     before = Velocity;
+    SetVelocity(Velocity + dest);
+    WorldInfo.game.Broadcast(self,"before: "$before$".  After: "$Velocity);
+
   }
 }
 
