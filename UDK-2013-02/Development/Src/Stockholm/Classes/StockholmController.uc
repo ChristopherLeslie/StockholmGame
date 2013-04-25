@@ -3,6 +3,8 @@ class StockholmController extends GameAIController;
 
 var float forward_looking_distance;
 var StockholmGame game;
+var float slowSpeed;
+var float normalSpeed;
 
 
 
@@ -12,6 +14,9 @@ simulated event PostBeginPlay()
 
   game = StockholmGame(WorldInfo.Game);
      super.PostBeginPlay();
+
+     slowSpeed = 200;
+     normalSpeed = 400;
    
 }
 
@@ -30,6 +35,11 @@ function int distToVector(Vector other){
 function runInDirectionOf(Vector destination){
   SetDestinationPosition(10000*(destination-Pawn.Location)+Pawn.Location);
   bPreciseDestination = True;
+}
+
+function runTo(Vector destination){
+    SetDestinationPosition(destination);
+    bPreciseDestination = True;
 }
 
 

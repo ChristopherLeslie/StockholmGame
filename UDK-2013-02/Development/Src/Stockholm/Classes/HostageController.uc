@@ -438,32 +438,32 @@ State Cautious{
 
 
 State Following{
-local Actor dest;
-
-/*
-  event seePlayer(Pawn seen){
-   if(!seen.Controller.isA('PlayerController')){
-      debug("SAW A MONSTER!");
-    }
-    else{
-      `log("see a player");
-    }
-  } 
-*/
+local vector dest;
+local vector offsetFromCaptor;
+local float followDistance;
+local float stopDistance;
 
 
   Begin:
-
+    followDistance = 250;
+    stopDistance = 250;
 
      debug("FOLLOWING");
 
-    dest = myCaptor; //GetALocalPlayerController().Pawn;
+     offsetFromCaptor = Pawn.Location-myCaptor.Location;
+     dest = myCaptor.Location + normal(offsetFromCaptor) * followDistance;
 
 
-    wayPoint = simplePathFindToActor(dest);
-                  //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
-    runInDirectionOf(wayPoint);
-    lookAtVector(wayPoint);
+    wayPoint = simplePathFindToPoint(dest);
+
+    if(distToVector(dest)<= stopDistance){
+      runTo(wayPoint);
+    }
+    else{
+      runInDirectionOf(wayPoint);
+    }
+
+    lookAt(myCaptor);
     sleep(0.5f);
 
    

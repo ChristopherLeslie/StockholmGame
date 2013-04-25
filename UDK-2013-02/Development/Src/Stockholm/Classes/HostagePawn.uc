@@ -162,27 +162,22 @@ simulated function increaseLoyalty(byte team_number){
   }
 }
 event bump(Actor Other, PrimitiveComponent OtherComp, Vector HitNormal){
-  local vector dest;
-  local vector before;
+  //local vector dest;
+  //local vector before;
 
-  //local float cdist;
-   // WorldInfo.Game.Broadcast(self,"getting touched");
-
-
+  
   super.bump(other,othercomp,hitnormal);
+  /*
   if(other.isA('CaptorPawn')){
     dest = Location - other.Location; //offset
-   // WorldInfo.game.Broadcast(self,"c dist: "$cdist);
     dest = normal(dest)*150; //scaled offset
-    dest.z = 1;
-    //dest = Location+dest; //actual destination
-    //WorldInfo.Game.Broadcast(self,"getting pushed");
-   // dest.z = dest.z + 1;
-    // before = Velocity;
+    dest.z = Location.z+1;
+    
     addVelocity(dest,Location,class 'InstantHitDamage');
-    //WorldInfo.game.Broadcast(self,"before: "$before$".  After: "$Velocity);
-
   }
+  */
+
+
 }
 
 event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
