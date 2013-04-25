@@ -173,12 +173,14 @@ event bump(Actor Other, PrimitiveComponent OtherComp, Vector HitNormal){
   if(other.isA('CaptorPawn')){
     dest = Location - other.Location; //offset
    // WorldInfo.game.Broadcast(self,"c dist: "$cdist);
-    dest = normal(dest)*100; //scaled offset
+    dest = normal(dest)*150; //scaled offset
+    dest.z = 1;
     //dest = Location+dest; //actual destination
     //WorldInfo.Game.Broadcast(self,"getting pushed");
-     before = Velocity;
-    SetVelocity(Velocity + dest);
-    WorldInfo.game.Broadcast(self,"before: "$before$".  After: "$Velocity);
+   // dest.z = dest.z + 1;
+    // before = Velocity;
+    addVelocity(dest,Location,class 'InstantHitDamage');
+    //WorldInfo.game.Broadcast(self,"before: "$before$".  After: "$Velocity);
 
   }
 }

@@ -1215,7 +1215,7 @@ State GoingHome{
 
   ContinuingToGoHome:
     debug("GOING HOME");
-      if(distToActor(dest) < 500){
+      if(distToActor(dest) < 25){
         GoToState('AtHome');
       }
      wayPoint = simplePathFindToActor(dest);
