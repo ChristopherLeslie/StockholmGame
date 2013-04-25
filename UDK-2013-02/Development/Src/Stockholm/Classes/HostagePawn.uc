@@ -1,6 +1,9 @@
 class HostagePawn extends StockholmPawn; 
 
 
+Var SoundCue hostageCapture;
+	
+
 var float ElapsedTime;
 
 var CaptorPawn captorCapturingMe;
@@ -14,7 +17,10 @@ simulated event PostBeginPlay()
 {
   setDrawScale(0.80f);
   `log("hello, I'm a bot");
+
    Super.PostBeginPlay();
+   StockholmGame(WorldInfo.Game).neutralHostages+=1;
+   StockholmGame(WorldInfo.Game).totalHostages+=1;
 }
 
 
@@ -42,29 +48,40 @@ event Tick(float DeltaTime)
 
 
 simulated function receivePersuasion(CaptorPawn captor){
-  
-  increaseLoyalty(captor.getTeamNum());
-  captorCapturingMe = captor;
-  `log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
+  if(Health > 0){
+    increaseLoyalty(captor.shTeamNum());
+    captorCapturingMe = captor;
+    //`log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
+  }
 }
 
 simulated function switchToTeam(byte team_number){
   local StockholmGame game;
+  local byte prev_team;
 
   game = StockholmGame(WorldInfo.Game);
+  prev_team = shTeamNum();
+  if(prev_team == game.redTeamNum){
+    game.redHostages -= 1;
+  }
+  else if(prev_team == game.blueTeamNum){
+    game.blueHostages -= 1;
+  }
+  else{
+    game.neutralHostages-=1;
+  }
 
   if(team_number != game.neutralTeamNum){ //The Hostage joined a team
     myCaptor = captorCapturingMe;
     HostageController(Controller).capturedBy(myCaptor);
     HostageController(Controller).GoToState('Following');
   }
-  else{ //The Hostage Became Neutral
-    HostageController(Controller).GoToState('Fleeing');
-  }
+ 
 
   if(team_number == game.redTeamNum){
     `log("I've switched to the red team.");
     teamNum = game.redTeamNum;
+    game.redHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VRed');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VRed');
 
@@ -72,7 +89,13 @@ simulated function switchToTeam(byte team_number){
 
   if(team_number == game.blueTeamNum){
     `log("I've switched to the blue team");
+	
+	
+	
+	PlaySound (hostageCapture,,,true,Location);
+
     teamNum = game.blueTeamNum;
+    game.blueHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VBlue');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VBlue');
 
@@ -81,9 +104,10 @@ simulated function switchToTeam(byte team_number){
   if(team_number == game.neutralTeamNum){
     `log("I've switched to the neutral team");
     teamNum = game.neutralTeamNum;
+    game.neutralHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_V01');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_V01');
-
+     HostageController(Controller).GoToState('Fleeing');
   }
 
 
@@ -143,12 +167,41 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 {
   Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
   if(damageAmount > 0){
-    HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
-    HostageController(Controller).GoToState('Fleeing');
+	if(HostageController(Controller).IsInState('Warding'))
+	{
+		`log("Hurt pawn is a ward");
+		if(Health <100)
+		{
+			Health = 100;
+		}
+	}
+	else if(HostageController(Controller).IsInState('RemoteMineAttacking'))
+	{
+		`log("Hurt pawn is an attacking mine");
+		HostageController(Controller).GoToState('BlowUpAndDie');
+	}
+	else if(HostageController(Controller).IsInState('Sentry'))
+	{
+		`log("Hurt pawn is a sentry");
+		Health = Health + 20;
+		if(Health < 1){
+		  die();
+		}
+	}
+	else
+	{
+		HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
+		HostageController(Controller).GoToState('Fleeing');
+		if(Health < 1){
+		  die();
+		}
+	}
   }
 }
 
-
+function die(){
+  StockholmGame(WorldInfo.Game).killHostage(shTeamNum());
+}
 
 
 
@@ -166,4 +219,7 @@ defaultproperties
  teamNum = 255
 
  sightRadius = 1400;
+
+ hostageCapture = SoundCue'Stockholm_Sounds.HostageCapture1_Cue';
+
 }

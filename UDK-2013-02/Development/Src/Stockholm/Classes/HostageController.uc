@@ -1,4 +1,4 @@
-class HostageController extends GameAIController;
+class HostageController extends StockholmController;
 
 //declaring variables here means
 //they may be used throughout this script
@@ -10,7 +10,7 @@ var SoundCue hostageScream;
 
 var Pawn pawnImThinkingAbout;
 var Pawn myCaptor;
-
+var PathNode homeZone;
 
 
 var Bool bIsFollowingCaptor;
@@ -18,34 +18,92 @@ var Bool bIsFollowingOrder;
 
 var int currentActionPriority;
 var Vector currentPrioritizedDestination;
-var() Vector TempDest;
+var Vector wayPoint;
 var Pawn currentPrioritizedTargetToFireAt;
 
 
-var int followShotPriority;
-var int followCaptorPriority;
-var int fleeCaptorPriority;
-var int wanderPriority;
-var int waitPriority;
-var int nothingPriority;
-var int fireAtEnemyHostagePriority;
+
 
 var bool captured;
 
 var int SentryDistanceToTargetStart;
 var int SentryDistanceToTargetStop;
 var int SentryMaxConsecutiveMisses;
+var Rotator currentRotation;
 
 var int WardingDistance;
+
+var vector LocationForItemToGoTo;
+
+var Pawn MineTargetPawn;
+var int MineDistanceToBlowUp;
+
+var array<Pathnode> Waypoints;
+var array<int> WaypointOrder;
 
 
 //at the start of the level
 simulated event PostBeginPlay()
 {
+  local pathnode Current;
+  local int i;
   super.PostBeginPlay();
+  i = 0;
+  foreach WorldInfo.AllActors(class'Pathnode',Current)
+  {
+	Waypoints.AddItem( Current );
+	WaypointOrder.AddItem(i);
+	i = i + 1;
+  }
+  ShuffleWaypointOrder();
 
   captured = false;
   Pawn.bAvoidLedges=true;
+}
+
+simulated event Possess(Pawn inPawn, bool bVehicleTransition)
+{
+
+  Super.Possess(inPawn, bVehicleTransition);
+
+  HostagePawn(Pawn).teamNum = 255;//Neutral
+
+}
+
+function ShuffleWaypointOrder()
+{
+	local int i;
+	local int j;
+	local int randomNumber;
+	local int tempNumber;
+	local String WaypointOrderString;
+	local String newOrderString;
+	local array<int> newOrder;
+	for( i = WaypointOrder.length ; i > 0 ; i--)
+	{
+		randomNumber = Rand(i-1);
+		tempNumber = WaypointOrder[randomNumber];
+		newOrder.AddItem(tempNumber);
+		WaypointOrderString = "";
+		for( j = 0 ; j < WaypointOrder.length; j++)
+		{	
+			WaypointOrderString = WaypointOrderString$""$WaypointOrder[j]$",";
+		}
+		//`log("From "$WaypointOrderString$" the "$randomNumber$" element");
+		WaypointOrder.Remove(randomNumber, 1);
+		WaypointOrderString = "";
+		for( j = 0 ; j < WaypointOrder.length; j++)
+		{	
+			WaypointOrderString = WaypointOrderString$""$WaypointOrder[j]$",";
+		}
+		newOrderString = "";
+		for( j = 0 ; j < newOrder.length; j++)
+		{	
+			newOrderString = newOrderString$""$newOrder[j]$",";
+		}
+		//`log("Old :"$WaypointOrderString$" and New:"$newOrderString);
+	}
+	WaypointOrder = newOrder;
 }
 
 function LookAt(Actor a){
@@ -63,18 +121,11 @@ local Rotator final_rot;
         Pawn.LockDesiredRotation(false,false);
         Pawn.SetDesiredRotation(final_rot,true);
 }
-function runInDirectionOf(Vector destination){
-  SetDestinationPosition(destination);
-  bPreciseDestination = True;
-}
+
 function stopMoving(){
   Pawn.ZeroMovementVariables();
   setDestinationPosition(Location);
   bPreciseDestination = false;
-}
-
-function int distTo(Actor other){
-  return VSize2D(Pawn.Location-other.Location);
 }
 
 
@@ -110,21 +161,26 @@ function bool FindNavMeshPathToActor(Actor dest)
     return NavigationHandle.FindPath();
   }
 
-function bool FindNavMeshPathToLocation(Vector dest)
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
 
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardPoint( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtLocation( NavigationHandle, dest,32 );
 
-    // Find path
-    return NavigationHandle.FindPath();
+
+function GoHome(){
+  if(StockholmPawn(Pawn).shTeamNum()==1){//blue
+    homeZone = StockholmGame(WorldInfo.Game).blueTeamBase();
   }
+  else{
+    homeZone = StockholmGame(WorldInfo.Game).redTeamBase();
+  } 
+  debug("homeZone: "$homeZone);
+  DrawDebugSphere(homeZone.Location,16,20,255,0,0,true);
 
+  GoToState('GoingHome');
+}
 
+function followCaptor(){
+  debug("followcaptorcommand");
+  GoToState('Following');
+}
 
 
 
@@ -194,7 +250,7 @@ State Roaming{
       return;
     }
 
-    if(distTo(seen) < Pawn.sightRadius){    //it's a captorpawn, and we don't roam while on the same team with any captor 
+    if(distToActor(seen) < Pawn.sightRadius){    //it's a captorpawn, and we don't roam while on the same team with any captor 
       pawnImThinkingAbout = seen;
       goToState('Cautious');    //so it is also not on our team
     }
@@ -238,45 +294,11 @@ State Roaming{
     DrawDebugLine(Pawn.Location,dest,255,0,0,true);
     DrawDebugSphere(dest,16,20,255,0,0,true);
 
-    lookAtVector(dest);
-     
-    if( NavigationHandle.PointReachable( dest) ){
-     MoveTo(dest);
-    }
-     
-     else if( FindNavMeshPathToLocation(dest) ){
-      `log(Pawn$" finding nav mesh path");
-        NavigationHandle.SetFinalDestination(dest);
-        FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
-
-        // move to the first node on the path
-        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
-        {
-          `log(Pawn$" moving to temp dest");
-          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-          DrawDebugSphere(TempDest,16,20,255,0,0,true);
-
-
-          do{
-            runInDirectionOf(TempDest);
-            sleep(0.5);
-          }
-          until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
-          VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-          
-        }
-        else{
-          `log(Pawn$" failure to do any path planning to get to "$dest);
-          debug("failure case 1");
-          sleep(1);
-        }
-    }
-    
-    else{
-      debug("failure case 2");
-      sleep(1);
-    }
+    wayPoint = simplePathFindToPoint(dest);
+                  //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
+    runInDirectionOf(wayPoint);
+    lookAtVector(wayPoint);
+    sleep(0.5f);
 
 
    
@@ -344,7 +366,7 @@ State Cautious{
    
     pawnImThinkingAbout = seen;
 
-    if(distTo(seen) < 1000){
+    if(distToActor(seen) < 1000){
       goToState('BackingUp');
     }
     else{
@@ -418,15 +440,16 @@ State Cautious{
 State Following{
 local Actor dest;
 
-
+/*
   event seePlayer(Pawn seen){
-    if(!seen.Controller.isA('PlayerController')){
+   if(!seen.Controller.isA('PlayerController')){
       debug("SAW A MONSTER!");
     }
     else{
       `log("see a player");
     }
-  }
+  } 
+*/
 
 
   Begin:
@@ -437,63 +460,11 @@ local Actor dest;
     dest = myCaptor; //GetALocalPlayerController().Pawn;
 
 
-     `log(Pawn$"attempting navigation");
-     
-     if( NavigationHandle.ActorReachable( dest) ){
-        FlushPersistentDebugLines();
-         Pawn.GroundSpeed = 200;
-         lookAt(dest);
-         MoveToward(dest,dest);
-         //debug("sleeping1");
-         //sleep(1);
-         debug("moving toward the player");
-         sleep(0.5);
-     }
-     
-     else if( FindNavMeshPathToActor(dest) ){
-      `log(Pawn$" finding nav mesh path");
-        NavigationHandle.SetFinalDestination(dest.Location);
-        FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
-
-        // move to the first node on the path
-        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
-        {
-          `log(Pawn$" moving to temp dest");
-          debug("moving to temp dest");
-          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-          DrawDebugSphere(TempDest,16,20,255,0,0,true);
-
-
-          do{
-            debug("running in direction of temp dest");
-            runInDirectionOf(TempDest);
-            lookAt(dest);
-            sleep(0.5);
-          }
-          until(NavigationHandle.ActorReachable(dest) ||                //we can run straight to our goal 
-          VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-          
-
-          //MoveTo( TempDest, dest );
-          debug("done moving to temp dest");
-        }
-        else{
-          `log(Pawn$" failure to do any path planning to get to "$dest);
-          debug("failure case 1");
-          sleep(1);
-        }
-    }
-    
-    else{
-      `log(Pawn$" failure to do path planning to get to "$dest);
-      if(canSee(Pawn(dest))){
-        debug("I can see you...");
-      }
-      debug("failure case 2");
-      sleep(1);
-    }
-
+    wayPoint = simplePathFindToActor(dest);
+                  //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
+    runInDirectionOf(wayPoint);
+    lookAtVector(wayPoint);
+    sleep(0.5f);
 
    
     goTo('Begin');
@@ -548,9 +519,9 @@ State BackingUp{
   GoTo('ContinueBackingUp');
 
   ContinueBackingUp:
-    debug("continuing to back up.  dist = "$distTo(pawnToFlee));
+    debug("continuing to back up.  dist = "$distToActor(pawnToFlee));
 
-    distance = distTo(pawnToFlee);
+    distance = distToActor(pawnToFlee);
     if(distance > 1200){
       goToState('Cautious');
     }
@@ -590,47 +561,9 @@ State Fleeing{
   local float distance;
   local vector dest;
 
-  local float forward_looking_distance;
-
-function Vector turn_until_you_can_run(){
-
-  local vector dest_attempt;
-  local Rotator xyOrientation;
-
-  local float adjustment_increment;
-  local int adjustment_counter;
-  local float startYaw;
-
-  //randomly choose to seek out a path to the left or to the right
-  if(RandRange(1,100) > 50){
-    adjustment_increment = 200;
-  }
-  else{
-    adjustment_increment = -200;
-  }
 
 
-  
-  xyOrientation = Pawn.Rotation;
-  adjustment_counter = 0;
-  startYaw = xyOrientation.yaw;
 
- 
-  do{
-    adjustment_counter += 1;
-    adjustment_increment *= -1;
-
-   xyOrientation.yaw = startYaw + adjustment_increment*adjustment_counter;
-
-    dest_attempt = Pawn.Location + normal(vector(xyOrientation))*forward_looking_distance;
-
-    DrawDebugLine(Pawn.Location,dest_attempt,255,0,0,true);
-
-
-  }until( adjustment_counter > 400 || NavigationHandle.PointReachable(dest_attempt));
-  return dest_attempt;
-
-}
   event SeePlayer(Pawn seen){
     if(seen.isA('HostagePawn')){
       return;
@@ -664,7 +597,7 @@ function Vector turn_until_you_can_run(){
     stopMoving();
     Pawn.GroundSpeed = 350;
     certainty = 100;
-    forward_looking_distance = 400;
+    
     player = pawnImThinkingAbout;
     estimated_player_location = player.Location;
     while(player == none){ //wait for the seePlayer event to trigger
@@ -675,7 +608,7 @@ function Vector turn_until_you_can_run(){
 
   ContinueFleeing:
 
-    distance = distTo(player);
+    distance = distToActor(player);
     if(distance < 600){                                       //we hear the footsteps
       estimated_player_location = player.Location;
       certainty = 100;
@@ -693,62 +626,14 @@ function Vector turn_until_you_can_run(){
     dest = Pawn.Location - estimated_player_location; //offset
     dest = normal(dest)*forward_looking_distance; //scaled offset
     dest = Pawn.Location+dest; //actual destination
-    //preferredDestination.setLocation(dest);
-
-    lookAtVector(dest); //run away facing away
-    runInDirectionOf(dest);
 
 
-
-
-if( !NavigationHandle.PointReachable( dest) ){
-     if( FindNavMeshPathToLocation(dest) ){
-      `log(Pawn$" finding nav mesh path");
-        NavigationHandle.SetFinalDestination(dest);
-        FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
-
-        // move to the first node on the path
-        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
-        {
-          if(!(VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius())){
-
-
-            `log(Pawn$" moving to temp dest");
-            debug("moving to temp dest");
-            DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-            DrawDebugSphere(TempDest,16,20,255,0,0,true);
-
-
-            do{
-              debug("running in direction of temp dest");
-              runInDirectionOf(TempDest);
-              sleep(0.1);
-            }
-            until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
-            VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-            
-
-            //MoveTo( TempDest, dest );
-            debug("done moving to temp dest");
-          }
-          else{
-            runInDirectionOf(dest);
-          }
-        }
-        else{
-          `log(Pawn$" failure to do any path planning to get to "$dest);
-          debug("failure case 1");
-          sleep(0.1);
-        }
-    }
     
-    else{
-     dest = turn_until_you_can_run();
-     runInDirectionOf(dest);
-     sleep(0.5);
-    }
-  }
+    wayPoint = simplePathFindToPoint(dest);
+                  //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
+    runInDirectionOf(wayPoint);
+    lookAtVector(wayPoint);
+    sleep(0.5f);
 
 
 
@@ -756,7 +641,7 @@ if( !NavigationHandle.PointReachable( dest) ){
 
 
 
-    sleep(0.1f);
+
     goTo('ContinueFleeing');
 }
 
@@ -764,24 +649,291 @@ if( !NavigationHandle.PointReachable( dest) ){
 
 function GoToRemoteMine()
 {
-	GoToState('RemoteMine');
+	GoToState('RemoteMineWandering');
 }
 
-
-State RemoteMine
+State BlowUpAndDie
 {
+	local int LoadedShotCount;
+	local int i;
+	local float theta;
+	local Vector SpreadVector;
+	local Projectile SpawnedProjectile;
 	Begin:
-		GoToState('Fleeing');
+		`log("BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM");
+		`log("BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM");
+		LoadedShotCount = 1;
+		for (i = 0; i < LoadedShotCount; i++)
+		{
+			// Give them some gradual spread.
+			theta = 10 * PI / 32768.0 * (i - float(LoadedShotCount - 1) / 2.0);
+			SpreadVector.X = Cos(theta);
+			SpreadVector.Y = Sin(theta);
+			SpreadVector.Z = 0.0;
+			
+			SpreadVector = vect(0,0,-1);
+
+			SpawnedProjectile = Spawn(class'UTProj_Rocket',,, Pawn.Location, Rotator(SpreadVector));
+			SpawnedProjectile.DamageRadius = 400; //default = 220
+			SpawnedProjectile.Damage= 200; //default = 100.0
+			if ( SpawnedProjectile != None )
+			{
+				//UTProjectile(SpawnedProjectile).TossZ += (frand() * 200 - 100);
+				SpawnedProjectile.Init(SpreadVector);
+			}
+		}
+}
+
+State RemoteMineAttacking
+{
+  local Actor dest;
+  local Vector TempDest;
+
+
+  event seePlayer(Pawn seen){
+
+  }
+
+
+  Begin:
+
+	dest = MineTargetPawn; //GetALocalPlayerController().Pawn;
+
+	if(VSize2D(Pawn.Location-MineTargetPawn.Location) < MineDistanceToBlowUp)
+    {
+		GoToState('BlowUpAndDie');
+    }
+
+    `log(Pawn$" attempting navigation to mine target "$MineTargetPawn);
+     
+     if( NavigationHandle.ActorReachable( dest) ){
+        FlushPersistentDebugLines();
+         Pawn.GroundSpeed = 500;
+         lookAt(dest);
+         MoveToward(dest,dest);
+         //debug("sleeping1");
+         //sleep(1);
+         sleep(0.5);
+     }
+     
+     else if( FindNavMeshPathToActor(dest) ){
+      `log(Pawn$" finding nav mesh path");
+        NavigationHandle.SetFinalDestination(dest.Location);
+        FlushPersistentDebugLines();
+        NavigationHandle.DrawPathCache(,TRUE);
+
+        // move to the first node on the path
+        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
+        {
+          `log(Pawn$" moving to temp dest");
+          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
+          DrawDebugSphere(TempDest,16,20,255,0,0,true);
+
+
+          do{
+            `log("running in direction of temp dest");
+            MoveTo(TempDest);
+            lookAt(dest);
+			if(VSize2D(Pawn.Location-MineTargetPawn.Location) < MineDistanceToBlowUp)
+			{
+				GoToState('BlowUpAndDie');
+			}
+          }
+          until(NavigationHandle.ActorReachable(dest) || //we can run straight to our goal
+          VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius()); //or we've reached TempDest
+
+          //MoveTo( TempDest, dest );
+          `log("done moving to temp dest");
+        }
+        else{
+          `log(Pawn$" failure to do any path planning to get to "$dest);
+          `log("failure case 1");
+          sleep(1);
+        }
+    }
+    
+    else{
+      `log(Pawn$" failure to do path planning to get to "$dest);
+      if(canSee(Pawn(dest))){
+        `log("I can see you...");
+      }
+      `log("failure case 2");
+      sleep(1);
+    }
+	goto('Begin');
+}
+
+State RemoteMineWandering
+{
+  local Vector dest;
+  local Vector random;
+  local int pathnodeNumber;
+  local Vector TempDest;
+
+
+  event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
+    local float distance;
+    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+
+    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+
+    lookAt(NoiseMaker);
+  }
+  
+
+  
+  event seePlayer(Pawn seen){
+
+    `log(Pawn$" sees "$seen);
+    if(seen.isA('CaptorPawn'))
+	{
+		if(!StockholmPawn(Pawn).sameTeam(StockholmPawn(seen)))
+		{
+			MineTargetPawn = seen;
+			GoToState('RemoteMineAttacking');
+		}
+    }
+  }
+  
+
+  Begin:
+    Pawn.GroundSpeed = 300;
+	pathnodeNumber = 0;
+    dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
+	`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
+    //Generate random vector "random" and random wait time
+
+  Roam:
+    FlushPersistentDebugLines();
+	`log("Here");
+    //random = VRand();
+    //random = Pawn.Location + random * 250;
+    //random.z = Pawn.Location.z;
+    //dest = random;
+	if(VSize2d(Pawn.Location - dest) < 100)
+	{
+		`log("Close enough!");
+		pathnodeNumber = pathnodeNumber+1;
+		if(pathnodeNumber == Waypoints.Length)
+		{
+			`log("Reset!");
+			pathnodeNumber = 0;
+			ShuffleWaypointOrder();
+		}
+		`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
+		dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
+	}
+	DrawDebugLine(Pawn.Location,dest,255,0,0,true);
+	DrawDebugSphere(dest,16,20,255,0,0,true);
+
+    wayPoint = simplePathFindToPoint(dest);
+    runInDirectionOf(wayPoint);
+    lookAtVector(wayPoint);
+	sleep(0.5);
+   
+    goTo('Roam');
+  /*local Vector dest;
+  local Vector random;
+  local int pathnodeNumber;
+  local Vector TempDest;
+  local Pawn pawnToAttack;
+
+
+  event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
+    local float distance;
+    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+
+    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+
+    lookAt(NoiseMaker);
+  }
+  
+
+  
+  event seePlayer(Pawn seen){
+
+    `log(Pawn$" sees "$seen);
+    if(seen.isA('CaptorPawn'))
+	{
+	  MineTargetPawn = seen;
+	  GoToState('RemoteMineAttacking');
+    }
+  }
+  
+
+  Begin:
+    Pawn.GroundSpeed = 300;
+	pathnodeNumber = 0;
+	pawnToAttack = None;
+    dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
+	`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
+
+  Roam:
+    FlushPersistentDebugLines();
+
+	if(VSize2d(Pawn.Location - dest) < 100)
+	{
+		`log("Close enough!");
+		pathnodeNumber = pathnodeNumber+1;
+		if(pathnodeNumber == Waypoints.Length)
+		{
+			`log("Reset!");
+			pathnodeNumber = 0;
+			ShuffleWaypointOrder();
+		}
+		`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
+		dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
+	}
+	
+	DrawDebugLine(Pawn.Location,dest,255,0,0,true);
+	DrawDebugSphere(dest,16,20,255,0,0,true);
+	lookAtVector(dest);
+	if( NavigationHandle.PointReachable( dest) ){
+		//`log("Moving to "$dest);
+		MoveTo(dest);
+	}
+	else if( FindNavMeshPathToLocation(dest) ){
+	  `log(Pawn$" finding nav mesh path");
+		NavigationHandle.SetFinalDestination(dest);
+		FlushPersistentDebugLines();
+		NavigationHandle.DrawPathCache(,TRUE);
+
+		// move to the first node on the path
+		if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
+		{
+		  `log(Pawn$" moving to temp dest");
+		  DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
+		  DrawDebugSphere(TempDest,16,20,255,0,0,true);
+
+
+		  do{
+			runInDirectionOf(TempDest);
+			sleep(0.5);
+		  }
+		  until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
+		  VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
+		  
+		}
+		else{
+		  `log(Pawn$" failure to do any path planning to get to "$dest);
+		  debug("failure case 1");
+		  sleep(1);
+		}
+	}
+	else{
+	  debug("failure case 2");
+	  sleep(1);
+	}
+	goTo('Roam');*/
 }
 
 
 
 
 
-
-
-function GoToSentry()
+function GoToSentry(vector destination)
 {
+	LocationForItemToGoTo = destination;
 	GoToState('Sentry');
 }
 
@@ -798,7 +950,32 @@ State Sentry
 	local Vector hitNormal;
 	local float scale;
 	local int successiveMisses;
+	
+	event SeePlayer(Pawn seen){
+		if(seen.isA('CaptorPawn')){
+			if(!StockHolmPawn(Pawn).sameTeam(captor)) //Enemy Captor
+			{
+				`log("I see youuuuuuuu");
+				currentPrioritizedTargetToFireAt = seen;
+			}
+		}
+	}
+	
 	Begin:
+		wayPoint = simplePathFindToPoint(LocationForItemToGoTo);
+		moveTo(wayPoint);
+		lookAtVector(wayPoint);
+		if(VSize2D(Pawn.Location - LocationForItemToGoTo) < Pawn.GetCollisionRadius())
+		{
+			stopMoving();
+			GoTo('SentryOn');
+		}
+		`log("Somewhere I have to get to first :"$LocationForItemToGoTo);
+		sleep(0.5);
+		GoTo('Begin');
+		
+		
+	SentryOn:
 		if(currentPrioritizedTargetToFireAt == none
 			   || currentPrioritizedTargetToFireAt.health <= 0)
 		{
@@ -806,13 +983,18 @@ State Sentry
 			successiveMisses = 0;
 			currentPrioritizedTargetToFireAt = none;
 			Pawn.StopFire(1);
-			foreach WorldInfo.AllPawns(class'Pawn', P)
+			Pawn.LockDesiredRotation(false,false);
+			Pawn.SetDesiredRotation(currentRotation,true,true,0.25);
+			currentRotation.pitch = currentRotation.pitch + (32677/13); 
+			currentRotation.yaw = currentRotation.yaw + (32677/13);
+			//`log("Rotating to "$currentRotation);
+			/*foreach WorldInfo.AllPawns(class'Pawn', P)
 			{
 				if(P.isA('CaptorPawn')) //Captor
 				{ 
 					captor = CaptorPawn(P);
 					distance = VSize2D(Pawn.Location - captor.Location);
-					if(captor.getTeamNum() == Pawn.getTeamNum()) //Friendly Captor
+					if(captor.shTeamNum() == Pawn.shTeamNum()) //Friendly Captor
 					{
 
 					}
@@ -831,7 +1013,7 @@ State Sentry
 					{
 						hostage = HostagePawn(P);
 						distance = VSize2D(Pawn.Location - hostage.Location);
-						if(hostage.getTeamNum() == Pawn.getTeamNum()) //Friendly Hostage
+						if(hostage.shTeamNum() == Pawn.shTeamNum()) //Friendly Hostage
 						{
 
 						}
@@ -845,7 +1027,8 @@ State Sentry
 						}
 					}
 				}
-			}
+			}*/
+			sleep(0.3);
 		}
 		else
 		{
@@ -881,7 +1064,7 @@ State Sentry
 			}
 		}
 		sleep(0.1);
-		GoTo('Begin');
+		GoTo('SentryOn');
 }
 
 
@@ -895,8 +1078,10 @@ State Sentry
 
 
 
-function GoToWard()
+function GoToWard(vector destination)
 {
+	LocationForItemToGoTo = destination;
+	`log("Warding");
 	GoToState('Warding');
 }
 
@@ -917,13 +1102,27 @@ State Warding
 	local Vector unitVector;
 	local Vector notunitvector;
 	Begin:
+		wayPoint = simplePathFindToPoint(LocationForItemToGoTo);
+		moveTo(wayPoint);
+		lookAtVector(wayPoint);
+		if(VSize2D(Pawn.Location - LocationForItemToGoTo) < Pawn.GetCollisionRadius())
+		{
+			stopMoving();
+			`log("Now Warding");
+			GoTo('WardingOn');
+		}
+		`log("Somewhere I have to get to first :"$LocationForItemToGoTo);
+		sleep(0.5);
+		GoTo('Begin');
+		
+	WardingOn:
 		foreach WorldInfo.AllPawns(class'Pawn', P)
 		{
 			if(P.isA('CaptorPawn')) //Captor
 			{
 				captor = CaptorPawn(P);
 				distance = VSize2D(Pawn.Location - captor.Location);
-				if(captor.getTeamNum() != Pawn.getTeamNum()) //Enemy Captor
+				if(!StockHolmPawn(Pawn).sameTeam(captor)) //Enemy Captor
 				{
 					if(distance < WardingDistance) //Enemy Captor is near me
 					{
@@ -994,14 +1193,74 @@ State Warding
 			}
 		}
 		sleep(0.005);
-		GoTo('Begin');
+		GoTo('WardingOn');
 }
 
 
 
-function debug(String s){
-  //WorldInfo.Game.Broadcast(self,s);
+
+
+
+
+
+State GoingHome{
+    local PathNode dest;
+    local Vector turn_dest;
+  Begin:
+    
+    dest = homeZone;
+    GoTo('ContinuingToGoHome');
+
+
+
+  ContinuingToGoHome:
+    debug("GOING HOME");
+      if(distToActor(dest) < 500){
+        GoToState('AtHome');
+      }
+     wayPoint = simplePathFindToActor(dest);
+    runInDirectionOf(wayPoint);
+    lookAtVector(wayPoint);
+    sleep(0.5f);
+
+        GoTo('ContinuingToGoHome');
+
 }
+
+State AtHome{
+  event EndState(name nextStateName){
+    if(HostagePawn(Pawn).bFeigningDeath){
+      HostagePawn(Pawn).FeignDeath();
+    }
+  }
+  Begin:
+    GoTo('Lounge');
+  Lounge:
+    HostagePawn(Pawn).FeignDeath();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1011,21 +1270,21 @@ function hearShot(Captorpawn captor, Vector hitLocation){
 
 defaultproperties
 {
-  followShotPriority = 5
-  fleeCaptorPriority = 4
-  fireAtEnemyHostagePriority = 3
-  followCaptorPriority = 2
-  wanderPriority = 1
-  waitPriority = 0
-  nothingPriority = -1
-  //continueCurrentAction = false
-  bIsPlayer=True
+  
+
+  bIsPlayer=True;
   SentryDistanceToTargetStart = 400;
   SentryDistanceToTargetStop = 3000;
   SentryMaxConsecutiveMisses = 20;
   WardingDistance = 450;
+  MineTargetPawn = None;
+  MineDistanceToBlowUp = 200;
 
+  forward_looking_distance = 250;
+  
+  
 
 
   hostageScream = SoundCue'Stockholm_Sounds.HostageFlee1_Cue';
+  
 }

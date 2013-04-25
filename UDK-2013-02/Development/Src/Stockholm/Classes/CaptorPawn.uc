@@ -7,6 +7,8 @@ var int WardPickups;
 var int SentryPickups;
 var int MinePickups;
 
+var SoundCue deathVoice;
+var SoundCue injuryVoice;
 
 simulated event PostBeginPlay()
 {
@@ -53,6 +55,37 @@ function IncMine(SeqAct_IncMine action)
 	MinePickups = MinePickups + 1;
 }
 
+function AddDefaultInventory()
+{
+    InvManager.CreateInventory(class'Stockholm.CaptorGun');
+}
+
+
+event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
+{
+  Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
+  if(damageAmount > 0){
+  
+	if(Controller.isA('PlayerController')){
+		if(Health < 20){
+		  //death noises
+		  PlaySound (deathVoice,,,,Location);
+		  
+		}
+		else if(Health < 20){
+		  //GUSHIN OUT LIKE ONE OF THEM CANDIES
+		  //PlaySound (Voice,,,true,Location);
+		}
+		else{
+			//GOT ME!
+			PlaySound (injuryVoice,,,true,Location);
+		}
+    }
+  }
+}
+
+
+
 
 defaultproperties
 {
@@ -62,4 +95,8 @@ defaultproperties
   WardPickups = 0
   SentryPickups = 0
   MinePickups = 0
+  
+  deathVoice = SoundCue'Stockholm_Sounds.Death1_Cue';
+  injuryVoice = SoundCue'Stockholm_Sounds.Injured1_Cue';
+  
 }

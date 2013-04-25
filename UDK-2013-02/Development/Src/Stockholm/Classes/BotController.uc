@@ -1,4 +1,4 @@
-class BotController extends GameAIController;
+class BotController extends StockholmController;
 
 var class<UTFamilyInfo> CharacterClass; 
 var MaterialInterface defaultMaterial0; //for some reason necessary for setting the materials later even though I don't ever define what the defaultMaterial0 is
@@ -6,7 +6,7 @@ var MaterialInterface defaultMaterial0; //for some reason necessary for setting 
 
 var HostagePawn hostageTarget;
 var float close_enough_to_capture;
-
+var Vector wayPoint;
 
 simulated event PostBeginPlay()
 {
@@ -31,6 +31,8 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	
 	//Set the pawn that CaptorController is controlling to look like a human
 	inPawn.Mesh.SetSkeletalMesh(SkeletalMesh'CH_IronGuard_Male.Mesh.SK_CH_IronGuard_MaleA');
+	inPawn.Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VRed');
+    inPawn.Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VRed');
 	//A lot of textures are missing if we don't do this step
 	//but it functions the same and looks like a crappy human
 	
@@ -43,11 +45,17 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 }
 
-simulated function byte getTeamNum(){
+simulated function byte shTeamNum(){
   return CaptorPawn(Pawn).teamNum;
 }
-function int distTo(Actor other){
-  return VSize2D(Pawn.Location-other.Location);
+
+function bool capturable(HostagePawn hostageP){
+	//alive and different teams
+	return (hostageP.Health > 0 && !StockholmPawn(Pawn).sameTeam(hostageP));
+}
+function bool captured(HostagePawn hostageP){
+	// alive and same teams
+	return ((hostageP.Health > 0) && StockholmPawn(Pawn).sameTeam(hostageP));
 }
 
 function HostagePawn closestHostage(){
@@ -57,19 +65,22 @@ function HostagePawn closestHostage(){
 	local float distToHostage;
 	local HostagePawn hostageP;
 
-	//Smell them from up to 10,000 away
-	maxRange = 10000;
+	//Smell them from up to 100,000 away
+	maxRange = 100000;
 	searchRange = maxRange;
 
 	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
-		distToHostage = distTo(hostageP);
+		if(capturable(hostageP)){
+			distToHostage = distToActor(hostageP);
 
-      	if(distToHostage < searchRange){
-      		closestHostage = hostageP;
-      		searchRange = distToHostage;
+	      	if(distToHostage < searchRange){
+	      		closestHostage = hostageP;
+	      		searchRange = distToHostage;
+	      	}
       	}
-      
+
     }
+    //debug("closest hostage is "$VSize2D(closestHostage.Location-Pawn.Location)$" units away"); 
     return closestHostage;
 }
 
@@ -98,7 +109,7 @@ function LookAtVector(Vector locationVec){
 	local Rotator final_rot;
     final_rot = Rotator(locationVec-Pawn.Location);
     Pawn.LockDesiredRotation(false,false);
-    Pawn.SetDesiredRotation(final_rot,true);
+    Pawn.SetDesiredRotation(final_rot,true,false,0.1);
 }
 function runInDirectionOf(Vector destination){
   SetDestinationPosition(destination);
@@ -118,33 +129,6 @@ function stopMoving(){
 
 
 
-function bool FindNavMeshPathToActor(Actor dest)
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardGoal( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtActor( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
-
-function bool FindNavMeshPathToLocation(Vector dest)
-  {
-    // Clear cache and constraints (ignore recycling for the moment)
-    NavigationHandle.PathConstraintList = none;
-    NavigationHandle.PathGoalList = none;
-
-    // Create constraints
-    class'NavMeshPath_Toward'.static.TowardPoint( NavigationHandle,dest );
-    class'NavMeshGoal_At'.static.AtLocation( NavigationHandle, dest,32 );
-
-    // Find path
-    return NavigationHandle.FindPath();
-  }
 
  simulated event GetPlayerViewPoint(out vector out_Location, out Rotator out_Rotation){
     // AI does things from the Pawn
@@ -181,151 +165,118 @@ auto State idle{
 	local Rotator newRot;
 	local Vector endpoint;
 	Begin:
-		
-
-
-
-
-
-		/*
-		Pawn.ZeroMovementVariables();
-	    Sleep(1); //Give the pawn the time to stop.
-	 	
-	    Aim();
-	    Pawn.StartFire(0);
-	    Pawn.StopFire(0);
-	    sleep(1);
-	    Pawn.StartFire(1);
-	    sleep(1);
-	    Pawn.StopFire(1);
-	    Sleep(0.5);
-	    GoTo('Begin');
-	    */
-
-
-
-
-
-
-
-
-	/*
-		newRot = Pawn.Rotation;
-		newRot.pitch = newRot.pitch + 1000;
-		Pawn.StartFire(1);
-		Pawn.LockDesiredRotation(false,false);
-        Pawn.SetDesiredRotation(newRot,true);
-		sleep(0.1);
-		WorldInfo.Game.Broadcast(self,Pawn.Rotation);
-		endpoint = Pawn.Location + normal(vector(Rotation))*400;
-		DrawDebugLine(Pawn.Location,endpoint,255,0,0,true);
-		GoTo('Begin');
-*/
 		GoToState('LookForHostages');
 }
-
-State LookForHostages{
+State Sit{
 	Begin:
+		debug("SITTING");
+		sleep(3);
+		if(!StockholmGame(WorldInfo.Game).teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
+			GoToState('LookForHostages');
+		}
+
+		GoTo('Begin');
+}
+State LookForHostages{
+
+	Begin:
+		debug("LOOKING FOR HOSTAGES");
+		
+		if(game.teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
+			GoToState('Sit');
+		}
+		//There is at least one hostage of the kind that I want
+		
 		hostageTarget = closestHostage();
+
 		if(hostageTarget == none){
 			Sleep(1);
 			GoTo('Begin');
 		}
 
-		PushState('ApproachTargetHostage');
+		GoToState('ApproachTargetHostage');
 }
 
 State ApproachTargetHostage{
-	local Vector TempDest;
+	
 
 	Begin:
 		Pawn.GroundSpeed = 400;
+		debug("approaching target hostage");
 		GoTo('ContinueApproaching');
 
 	ContinueApproaching:
 
-		if( NavigationHandle.ActorReachable( hostageTarget) ){
-	         MoveToward(hostageTarget,hostageTarget);
-	    }     	
-
-	    if(distTo(hostageTarget) < close_enough_to_capture){
+	    if(distToActor(hostageTarget) < close_enough_to_capture){
 	    	GoToState('Capturing');
 	    }
-     
-     	else if( FindNavMeshPathToActor(hostageTarget) ){
-	        NavigationHandle.SetFinalDestination(hostageTarget.Location);
-	        NavigationHandle.DrawPathCache(,TRUE);
-
-	        // move to the first node on the path
-	        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
-	        {
-	          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-	          DrawDebugSphere(TempDest,16,20,255,0,0,true);
-
-	          do{
-	            runInDirectionOf(TempDest);
-	            lookAtVector(TempDest);
-	            sleep(0.25);
-	          }
-	          until(NavigationHandle.ActorReachable(hostageTarget) ||               //we can run straight to our goal 
-	          VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-	        }
-	        else{
-	          WorldInfo.Game.Broadcast(self,"failure case 1");
-	          sleep(1);
-	        }
-	    }
-	    
-	    else{
-	      WorldInfo.Game.Broadcast(self,"failure case 2");
-	      sleep(1);
-	    }
+	    	DrawDebugSphere(hostageTarget.Location,16,20,0,0,255,true);
+		wayPoint = simplePathFindToActor(hostageTarget);
+		runInDirectionOf(wayPoint);
+		lookAtVector(wayPoint);
+		sleep(0.7);
 
 	GoTo('ContinueApproaching');
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 State Capturing{
 	local Rotator newRotation;
 	local Vector out_location;
 	local Rotator out_rotation;
-	local ImpactInfo testImpact;	
+	local ImpactInfo testImpact;
+	local HostagePawn nullHP;	
+	local HostagePawn target;
+	
+
 
 	Begin:
+		debug("I'm a "$Pawn$" looking to capture "$hostageTarget$" with a "$Pawn.Weapon);
 		GoTo('ContinueCapturing');
 
 	ContinueCapturing:
-		moveToward(hostageTarget);	
-		//WorldInfo.Game.Broadcast(self,Pawn.Weapon);
-
-		if(distTo(hostageTarget) > close_enough_to_capture){
+		target = hostageTarget;
+		
+		if(captured(target) || target.Health < 1){
 			Pawn.StopFire(1);
-			
+			GoToState('LookForHostages');
+		}
+
+		wayPoint = simplePathFindToActor(target);
+		runInDirectionOf(wayPoint);
+		lookAtVector(wayPoint);
+		sleep(0.7);
+
+		if(distToActor(target) > close_enough_to_capture || !canSeeByPoints(Pawn.Location,target.Location,Pawn.Rotation)){
+			Pawn.StopFire(1);
 		}
 		else{
-			CaptorGun(Pawn.Weapon).linkedTo = hostageTarget;
-			Pawn.StartFire(1);
-			if(Pawn.Weapon.isA('UTWeap_LinkGun')){
-				hostageTarget.Controller.GetActorEyesViewPoint(out_Location, out_Rotation);
-				DrawDebugLine(Pawn.Location,out_location,255,0,0,true);
-				DrawDebugSphere(out_Location,16,20,255,0,0,true);
-				testImpact.HitActor = hostageTarget;
-				testImpact.HitLocation = out_location;
-				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),hostageTarget);
-				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),hostageTarget);
-				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),hostageTarget);
-				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),hostageTarget);
-
-				//CaptorGun(Pawn.Weapon).ProcessBeamHit(Pawn.Location, out_location-Pawn.Location, testImpact, 0.05);
-
+			//we're close enough and have LoS to the hostage
+			lookAt(target);
+			if(Pawn.Weapon.isA('CaptorGun')){
+				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),target);
+				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),target);
+				sleep(0.1);
+				Pawn.StartFire(1);
 			}
 
 		}
-
 		
 		
-		sleep(1);
-				Pawn.StopFire(1);
 
 
 		GoTo('ContinueCapturing');
@@ -352,7 +303,9 @@ State Capturing{
 
 
 
-
+function debug(String s){
+  WorldInfo.Game.Broadcast(self,s);
+}
 
 
 
@@ -363,6 +316,6 @@ defaultproperties
   //Points to the UTFamilyInfo class for your custom character
   CharacterClass=class'UTFamilyInfo_Liandri_Male'
 
-  close_enough_to_capture = 500;
+  close_enough_to_capture = 1000;
   
 }
