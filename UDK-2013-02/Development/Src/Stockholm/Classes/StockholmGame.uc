@@ -9,11 +9,16 @@ var int blueHostages;
 var int neutralHostages;
 var int totalHostages;
 
+var int blueBaseHostages;
+var int redBaseHostages;
+
+
 var PathNode PrivateBlueTeamBase;
 var PathNode PrivateRedTeamBase;
 
 var bool blueTeamBaseInitialized;
 var bool redTeamBaseInitialized;
+
 
 
 
@@ -39,6 +44,24 @@ function int hostagesByTeam(byte team_number){
 function bool teamByNumHasAllHostages(byte team_number){
 	return hostagesByTeam(team_number) >= totalHostages;
 	dispHostageNums();
+}
+
+function enterBase(byte team_number){
+	if(team_number == redteamNum){
+		redBaseHostages += 1;
+	}
+	if(team_number == blueTeamNum){
+		blueBaseHostages += 1;
+	}
+}
+
+function leaveBase(byte team_number){
+	if(team_number == redteamNum){
+		redBaseHostages -= 1;
+	}
+	if(team_number == blueTeamNum){
+		blueBaseHostages -= 1;
+	}
 }
 
 function killHostage(byte team_number){
@@ -127,4 +150,6 @@ defaultproperties
 
  	redTeamBaseInitialized = False
  	blueTeamBaseInitialized = False
+
+ 	bUseClassicHUD = true;
 }

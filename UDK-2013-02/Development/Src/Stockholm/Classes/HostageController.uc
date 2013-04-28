@@ -8,7 +8,7 @@ var SoundCue hostageScream;
 
 
 
-var Pawn pawnImThinkingAbout;
+var Pawn frightener;
 var Pawn myCaptor;
 var PathNode homeZone;
 
@@ -66,7 +66,7 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
   Super.Possess(inPawn, bVehicleTransition);
 
-  HostagePawn(Pawn).teamNum = 255;//Neutral
+  HostagePawn(Pawn).setSHteamNum(255); //Neutral
 
 }
 
@@ -141,9 +141,18 @@ function reactToSeeingAPlayer(Pawn seen){
 }
 
 function capturedBy(CaptorPawn captor){
+  local Pawn nobody;
+
   myCaptor = captor;
   debug("I been captured!");
-  GoToState('Following');
+  Pawn.Groundspeed = 400;
+  frightener = nobody;
+  if(myCaptor.Controller.isA('PlayerController')){
+    GoToState('Following');
+  }
+  else{
+    goHome();
+  }
 }
 
 
@@ -251,7 +260,7 @@ State Roaming{
     }
 
     if(distToActor(seen) < Pawn.sightRadius){    //it's a captorpawn, and we don't roam while on the same team with any captor 
-      pawnImThinkingAbout = seen;
+      frightener = seen;
       goToState('Cautious');    //so it is also not on our team
     }
 
@@ -364,7 +373,7 @@ State Cautious{
 
     //it's a captorpawn and we aren't on the same team
    
-    pawnImThinkingAbout = seen;
+    frightener = seen;
 
     if(distToActor(seen) < 1000){
       goToState('BackingUp');
@@ -394,7 +403,7 @@ State Cautious{
       debug("waiting for "$waitTime$" seconds.");
       sleep(waitTime);
 
-      if(!canSee(pawnImThinkingAbout)){
+      if(!canSee(frightener)){
         percentWorried -= 40*waitTime;
 
         random  = VRand();
@@ -410,7 +419,7 @@ State Cautious{
         finishRotation();
       }
       else{
-        lookAt(pawnImThinkingAbout);
+        lookAt(frightener);
       }
      
       if(percentWorried <= 0){
@@ -502,14 +511,14 @@ State BackingUp{
       return;
     }
     //it's a captor!
-    pawnImThinkingAbout = seen;
+    frightener = seen;
     pawnToFlee = seen;
   }
 
   Begin:
   Pawn.GroundSpeed = 200;
   debug("BACKING UP");
-  pawnToFlee = pawnImThinkingAbout;
+  pawnToFlee = frightener;
     while(pawnToFlee == none){
       `log("looking for pawn to flee");
       sleep(0.3f);
@@ -565,13 +574,10 @@ State Fleeing{
 
 
   event SeePlayer(Pawn seen){
-    if(seen.isA('HostagePawn')){
-      return;
+    if(seen == frightener){
+      certainty = 100;
+      estimated_player_location = player.Location; //a perfect estimation!
     }
-    certainty = 100;
-    player = seen;
-    pawnImThinkingAbout = seen;
-    estimated_player_location = player.Location; //a perfect estimation!
   }
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
@@ -580,7 +586,7 @@ State Fleeing{
 
     `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
 
-    if(player == NoiseMaker){
+    if(frightener == NoiseMaker){
       certainty = 100;
       estimated_player_location = player.Location;
     }
@@ -598,27 +604,24 @@ State Fleeing{
     Pawn.GroundSpeed = 350;
     certainty = 100;
     
-    player = pawnImThinkingAbout;
-    estimated_player_location = player.Location;
-    while(player == none){ //wait for the seePlayer event to trigger
-          sleep(0.1f);
-    }
+    estimated_player_location = frightener.Location;
+
     GoTo('ContinueFleeing');
 
 
   ContinueFleeing:
 
-    distance = distToActor(player);
+    distance = distToActor(frightener);
     if(distance < 600){                                       //we hear the footsteps
-      estimated_player_location = player.Location;
+      estimated_player_location = frightener.Location;
       certainty = 100;
     }
-    certainty -= 3;
+    certainty -= 10;
     if(certainty < 0){
       stopMoving();
       lookAtVector(estimated_player_location);
       finishRotation();
-      if(!canSee(player)){
+      if(!canSee(frightener)){
         goToState('Cautious');
       }
     }
@@ -634,11 +637,6 @@ State Fleeing{
     runInDirectionOf(wayPoint);
     lookAtVector(wayPoint);
     sleep(0.5f);
-
-
-
-
-
 
 
 
@@ -1215,7 +1213,9 @@ State GoingHome{
 
   ContinuingToGoHome:
     debug("GOING HOME");
-      if(distToActor(dest) < 25){
+      if(distToActor(dest) < 100){
+        runTo(dest.Location);
+        sleep(1);
         GoToState('AtHome');
       }
      wayPoint = simplePathFindToActor(dest);
@@ -1232,7 +1232,13 @@ State AtHome{
     if(HostagePawn(Pawn).bFeigningDeath){
       HostagePawn(Pawn).FeignDeath();
     }
+    game.leaveBase(StockholmPawn(Pawn).shTeamNum());
+    GoToState(nextStateName);
   }
+  event BeginState(name previousSateName){
+    game.enterBase(StockholmPawn(Pawn).shTeamNum());
+  }
+
   Begin:
     GoTo('Lounge');
   Lounge:

@@ -50,6 +50,9 @@ event Tick(float DeltaTime)
 simulated function receivePersuasion(CaptorPawn captor){
   if(Health > 0){
     increaseLoyalty(captor.shTeamNum());
+    if(captor.shTeamNum() == shTeamNum()){
+      GoToState('Fleeing');
+    }
     captorCapturingMe = captor;
     //`log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
   }
@@ -61,6 +64,7 @@ simulated function switchToTeam(byte team_number){
 
   game = StockholmGame(WorldInfo.Game);
   prev_team = shTeamNum();
+
   if(prev_team == game.redTeamNum){
     game.redHostages -= 1;
   }
@@ -71,16 +75,11 @@ simulated function switchToTeam(byte team_number){
     game.neutralHostages-=1;
   }
 
-  if(team_number != game.neutralTeamNum){ //The Hostage joined a team
-    myCaptor = captorCapturingMe;
-    HostageController(Controller).capturedBy(myCaptor);
-    HostageController(Controller).GoToState('Following');
-  }
  
 
   if(team_number == game.redTeamNum){
     `log("I've switched to the red team.");
-    teamNum = game.redTeamNum;
+    setshteamNum(game.redTeamNum);
     game.redHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VRed');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VRed');
@@ -94,7 +93,7 @@ simulated function switchToTeam(byte team_number){
 	
 	PlaySound (hostageCapture,,,true,Location);
 
-    teamNum = game.blueTeamNum;
+    setSHteamNum (game.blueTeamNum);
     game.blueHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_VBlue');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_VBlue');
@@ -103,11 +102,15 @@ simulated function switchToTeam(byte team_number){
 
   if(team_number == game.neutralTeamNum){
     `log("I've switched to the neutral team");
-    teamNum = game.neutralTeamNum;
+    setshteamNum(game.neutralTeamNum);
     game.neutralHostages += 1;
      Mesh.SetMaterial(0,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MBody01_V01');
      Mesh.SetMaterial(1,MaterialInstanceConstant'CH_Corrupt_Male.Materials.MI_CH_Corrupt_MHead01_V01');
      HostageController(Controller).GoToState('Fleeing');
+  }
+  else{
+    myCaptor = captorCapturingMe;
+    HostageController(Controller).capturedBy(myCaptor);
   }
 
 
@@ -135,7 +138,7 @@ simulated function increaseLoyalty(byte team_number){
     else if(redLoyalty < maxLoyalty){
       ++redLoyalty;
     }
-    else if(teamNum != game.redTeamNum){
+    else if(shteamNum() != game.redTeamNum){
       switchToTeam(game.redTeamNum);
     }
     else{
@@ -153,7 +156,7 @@ simulated function increaseLoyalty(byte team_number){
     else if(blueLoyalty < maxLoyalty){
       ++blueLoyalty;
     }
-    else if(teamNum != game.blueTeamNum){
+    else if(shteamNum() != game.blueTeamNum){
       switchToTeam(game.blueTeamNum);
     }
     else{
@@ -167,15 +170,7 @@ event bump(Actor Other, PrimitiveComponent OtherComp, Vector HitNormal){
 
   
   super.bump(other,othercomp,hitnormal);
-  /*
-  if(other.isA('CaptorPawn')){
-    dest = Location - other.Location; //offset
-    dest = normal(dest)*150; //scaled offset
-    dest.z = Location.z+1;
-    
-    addVelocity(dest,Location,class 'InstantHitDamage');
-  }
-  */
+
 
 
 }
@@ -202,22 +197,30 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 		`log("Hurt pawn is a sentry");
 		Health = Health + 20;
 		if(Health < 1){
-		  die();
+		  //die();
 		}
 	}
 	else
 	{
-		HostageController(Controller).pawnImThinkingAbout = EventInstigator.Pawn;
-		HostageController(Controller).GoToState('Fleeing');
+    if(EventInstigator.Pawn.isA('HostagePawn')){
+
+    }
+    else{
+		  HostageController(Controller).GoToState('Fleeing');
+      HostageController(Controller).frightener = EventInstigator.Pawn;
+    }
 		if(Health < 1){
-		  die();
+		  //die();
 		}
 	}
   }
 }
 
-function die(){
+
+simulated function playDying(class<DamageType> DamageType, vector HitLoc){
   StockholmGame(WorldInfo.Game).killHostage(shTeamNum());
+
+  super.playDying(damageType, hitLoc);
 }
 
 
@@ -233,7 +236,7 @@ defaultproperties
  redLoyalty = 0
  blueLoyalty = 0
  maxLoyalty = 20
- teamNum = 255
+ shInnerTeamNum = 255
 
  sightRadius = 1400;
 

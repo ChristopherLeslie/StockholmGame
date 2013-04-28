@@ -41,12 +41,12 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	//	inPawn.Mesh.SetMaterial(i,defaultMaterial0);
 	//}
 
-	CaptorPawn(Pawn).teamNum = 0;//Red
+	CaptorPawn(Pawn).setSHteamNum(0); //red
 
 }
 
 simulated function byte shTeamNum(){
-  return CaptorPawn(Pawn).teamNum;
+  return CaptorPawn(Pawn).shteamNum();
 }
 
 function bool capturable(HostagePawn hostageP){
@@ -270,6 +270,9 @@ State Capturing{
 			if(Pawn.Weapon.isA('CaptorGun')){
 				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),target);
 				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),target);
+				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),target);
+				CaptorGun(Pawn.Weapon).create_beam_from_me_to_you(CaptorPawn(Pawn),target);
+
 				sleep(0.1);
 				Pawn.StartFire(1);
 			}

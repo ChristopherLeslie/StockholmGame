@@ -1,6 +1,6 @@
 class StockholmPawn extends UTPawn;
 
-var byte teamNum;
+var byte shInnerTeamNum;
 
 var int redLoyalty;
 var int blueLoyalty;
@@ -17,9 +17,12 @@ simulated event PostBeginPlay()
 
 
 simulated function byte shTeamNum(){
-  return teamNum;
+  return shInnerTeamNum;
 }
 
+function setShTeamNum(byte newTeamNum){
+  shInnerTeamNum = newTeamNum;
+}
 
 
 

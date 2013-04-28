@@ -88,6 +88,7 @@ function Vector simplePathFindToActor(Actor dest){
 function Vector simplePathFindToPoint(Vector dest){
 	local Vector TempDest;
 
+
 	if( NavigationHandle.PointReachable( dest) ){
      	return(dest);
     }
@@ -122,6 +123,7 @@ function Vector simplePathFindToPoint(Vector dest){
     
     
    	debug("failure case 2");
+
     return turn_until_you_can_run();
     
    

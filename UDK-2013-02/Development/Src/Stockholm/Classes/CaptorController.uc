@@ -35,7 +35,7 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 		inPawn.Mesh.SetMaterial(i,defaultMaterial0);
 	}
 
-	CaptorPawn(Pawn).teamNum = 1; //Blue
+	CaptorPawn(Pawn).setShTeamNum(1); //Blue
 	//start playing
 	
 	PlaySound (startVoice,,,true,);
@@ -323,7 +323,7 @@ function Vector LocationImLookingAt(){
 
 
 simulated function byte shTeamNum(){
-  return CaptorPawn(Pawn).teamNum;
+  return CaptorPawn(Pawn).shteamNum();
 }
 
 function debug(String s){

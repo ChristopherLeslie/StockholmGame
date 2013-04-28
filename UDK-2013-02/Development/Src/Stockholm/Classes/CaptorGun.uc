@@ -154,7 +154,7 @@ function process_beam_from_me_to_you(CaptorPawn captorP, HostagePawn hostageP){
 	//WorldInfo.Game.Broadcast(self,captorP$" shot "$hostageP);
 	hostageC = HostageController(hostageP.Controller);
 
-	hostageC.pawnImThinkingAbout = captorP;
+	hostageC.frightener = captorP;
 	//hostageC.GoToState('Fleeing');
 	hostageP.receivePersuasion(captorP);
 	hostageP.TakeDamage(0, CaptorP.Controller, hostageP.Location, PushForce, InstantHitDamageTypes[1], hitInfo, self);
