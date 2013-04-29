@@ -141,9 +141,53 @@ function Vector simplePathFindToPoint(Vector dest){
 
 
 
+function Vector simplePathFindToActorOrRandom(Actor a){
+  return simplePathFindToPointOrRandom(a.location);
+}
+
+function Vector simplePathFindToPointOrRandom(Vector dest){
+  local Vector TempDest;
 
 
+  if( NavigationHandle.PointReachable( dest) ){
+      return(dest);
+    }
+          if(Pawn.isA('CaptorPawn')){
+             DrawDebugLine(Pawn.Location,dest,255,0,255,true);
+             DrawDebugSphere(dest,16,20,255,0,255,true);
+          }
 
+    if( FindNavMeshPathToLocation(dest) ){
+        `log(Pawn$" finding nav mesh path");
+        NavigationHandle.SetFinalDestination(dest);
+        //FlushPersistentDebugLines();
+        NavigationHandle.DrawPathCache(,TRUE);
+
+        // move to the first node on the path
+        if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) ){
+          `log(Pawn$" moving to temp dest");
+            //DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
+          // DrawDebugSphere(TempDest,16,20,255,0,0,true);
+            return TempDest;
+        }
+        else{
+          `log(Pawn$" failure to do any path planning to get to "$dest);
+          debug("failure case 1");
+          return findRandomDest().Location;
+        
+        }
+    }
+    
+        
+    
+    
+    
+    debug("failure case 2");
+
+    return findRandomDest().Location;
+    
+   
+}
 
 
 

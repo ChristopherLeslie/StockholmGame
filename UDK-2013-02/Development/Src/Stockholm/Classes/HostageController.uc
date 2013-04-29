@@ -141,12 +141,12 @@ function reactToSeeingAPlayer(Pawn seen){
 }
 
 function capturedBy(CaptorPawn captor){
-  local Pawn nobody;
+  
 
   myCaptor = captor;
   debug("I been captured!");
   Pawn.Groundspeed = 400;
-  frightener = nobody;
+
   if(myCaptor.Controller.isA('PlayerController')){
     GoToState('Following');
   }
@@ -1228,37 +1228,24 @@ State GoingHome{
 }
 
 State AtHome{
-  local name preferredState;
+  
 
   event EndState(name nextStateName){
-    if(HostagePawn(Pawn).bFeigningDeath){
-      HostagePawn(Pawn).FeignDeath();
-      preferredState = nextStateName;
-    }
-    else{
+   
       game.leaveBase(StockholmPawn(Pawn).shTeamNum());
       GoToState(nextStateName);
-    }
+
   }
   event BeginState(name previousSateName){
     game.enterBase(StockholmPawn(Pawn).shTeamNum());
   }
 
   Begin:
-    preferredState = 'AtHome';
+ 
     GoTo('Lounge');
   Lounge:
-    if(HostagePawn(Pawn).bFeigningDeath){
 
-    }
-    else{
-      HostagePawn(Pawn).FeignDeath();
-    }
-    sleep(1);
-    if(preferredState != 'AtHome'){
-      GoToState(preferredState);
-    }
-    GoTo('Lounge');
+    
     
 }
 

@@ -191,5 +191,5 @@ function process_beam_from_me_to_you(CaptorPawn captorP, HostagePawn hostageP){
 
 defaultproperties
 {
-	
+	WeaponProjectiles(0)=class'CaptorBullet'
 }
