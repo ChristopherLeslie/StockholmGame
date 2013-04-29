@@ -80,6 +80,9 @@ function killHostage(byte team_number){
 function dispHostageNums(){
 	Broadcast(self,"Red: "$redHostages$". Blue: "$blueHostages$". Neut: "$neutralHostages$". Total: "$totalHostages);
 }
+function dispBaseHostageNums(){
+	Broadcast(self,"Red Base: "$redBaseHostages$".  Blue Base: "$blueBaseHostages);
+}
 
 
 function PathNode blueTeamBase(){

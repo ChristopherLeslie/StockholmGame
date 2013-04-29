@@ -287,7 +287,7 @@ exec function FollowMe(){
 	local HostagePawn hostageP;
 	local bool isFollowing;
 	StockholmGame(WorldInfo.Game).dispHostageNums();
-
+	StockholmGame(WorldInfo.Game).dispBaseHostageNums();
 	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
 		isFollowing = HostageController(hostageP.Controller).getStateName() == 'Following';
 

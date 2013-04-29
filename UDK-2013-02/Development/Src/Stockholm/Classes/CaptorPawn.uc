@@ -8,6 +8,7 @@ var int SentryPickups;
 var int MinePickups;
 
 var SoundCue deathVoice;
+var SoundCue pickupSound;
 var SoundCue injuryVoice;
 
 simulated event PostBeginPlay()
@@ -43,16 +44,19 @@ event Tick(float DeltaTime)
 function IncWard(SeqAct_IncWard action)
 {
 	WardPickups = WardPickups + 1;
+	PlaySound (pickupSound,,,true,);
 }
 
 function IncSentry(SeqAct_IncSentry action)
 {
 	SentryPickups = SentryPickups + 1;
+	PlaySound (pickupSound,,,true,);
 }
 
 function IncMine(SeqAct_IncMine action)
 {
 	MinePickups = MinePickups + 1;
+	PlaySound (pickupSound,,,true,);
 }
 
 function AddDefaultInventory()
@@ -98,5 +102,5 @@ defaultproperties
   
   deathVoice = SoundCue'Stockholm_Sounds.Death1_Cue';
   injuryVoice = SoundCue'Stockholm_Sounds.Injured1_Cue';
-  
+  pickupSound = SoundCue'Stockholm_Sounds.PickupSound_Cue';
 }

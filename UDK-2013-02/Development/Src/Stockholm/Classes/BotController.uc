@@ -211,7 +211,7 @@ State ApproachTargetHostage{
 	    	GoToState('Capturing');
 	    }
 	    	DrawDebugSphere(hostageTarget.Location,16,20,0,0,255,true);
-		wayPoint = simplePathFindToActor(hostageTarget);
+		wayPoint = simplePathFindToActorOrRandom(hostageTarget);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
 		sleep(0.7);
@@ -256,7 +256,7 @@ State Capturing{
 			GoToState('LookForHostages');
 		}
 
-		wayPoint = simplePathFindToActor(target);
+		wayPoint = simplePathFindToActorOrRandom(target);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
 		sleep(0.7);
