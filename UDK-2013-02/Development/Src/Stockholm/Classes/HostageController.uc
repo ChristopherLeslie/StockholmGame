@@ -1228,21 +1228,38 @@ State GoingHome{
 }
 
 State AtHome{
+  local name preferredState;
+
   event EndState(name nextStateName){
     if(HostagePawn(Pawn).bFeigningDeath){
       HostagePawn(Pawn).FeignDeath();
+      preferredState = nextStateName;
     }
-    game.leaveBase(StockholmPawn(Pawn).shTeamNum());
-    GoToState(nextStateName);
+    else{
+      game.leaveBase(StockholmPawn(Pawn).shTeamNum());
+      GoToState(nextStateName);
+    }
   }
   event BeginState(name previousSateName){
     game.enterBase(StockholmPawn(Pawn).shTeamNum());
   }
 
   Begin:
+    preferredState = 'AtHome';
     GoTo('Lounge');
   Lounge:
-    HostagePawn(Pawn).FeignDeath();
+    if(HostagePawn(Pawn).bFeigningDeath){
+
+    }
+    else{
+      HostagePawn(Pawn).FeignDeath();
+    }
+    sleep(1);
+    if(preferredState != 'AtHome'){
+      GoToState(preferredState);
+    }
+    GoTo('Lounge');
+    
 }
 
 
