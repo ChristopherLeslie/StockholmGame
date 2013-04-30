@@ -50,51 +50,12 @@ function bool captured(HostagePawn hostageP){
 
 exec function CreateWard()
 {
-	/*local vector loc, norm, end;
-	local TraceHitInfo hitInfo;
-	local Actor traceHit;
-	local HostagePawn target;
-	`log("Trying to create a ward");
-	`log("Pawn has "$CaptorPawn(Pawn).WardPickups$" ward pickups");
-	if(CaptorPawn(Pawn).WardPickups > 0)
-	{
-		//`log(Pawn.Location$" and "$vector(Rotation));
-		//end = Location + normal(vector(Rotation));
-		end = Location + vector(Rotation)*10000;
-		//`log(end);
-		traceHit = trace(loc, norm, end, Pawn.Location, true,, hitInfo);
-		if(traceHit == none)
-		{
-			`log("Hit Nothing");
-		}
-		else if(traceHit.isA('HostagePawn'))
-		{
-			`log("Hit a hostage!");
-			target = HostagePawn(traceHit);
-			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
-			//{
-				HostageController(target.Controller).GoToWard();
-				
-				PlaySound (wardVoice,,,true,);
-				
-				CaptorPawn(Pawn).WardPickups = CaptorPawn(Pawn).WardPickups -1;
-			//}
-		}
-		else
-		{
-			`log("Missed all hostages");
-		}
-	}
-	else
-	{
-		`log("Not enough ward pickups");
-	}*/
 	local HostagePawn hpawn;
 	local HostagePawn hostageP;
 	local bool isFollowing;
 	hpawn = None;
-	`log("Trying to create a mine");
-	`log("Pawn has "$CaptorPawn(Pawn).WardPickups$" sentry pickups");
+	`log("Trying to create a ward");
+	`log("Pawn has "$CaptorPawn(Pawn).WardPickups$" ward pickups");
 	if(CaptorPawn(Pawn).WardPickups > 0)
 	{
 		foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
@@ -125,50 +86,11 @@ exec function CreateWard()
 
 exec function CreateSentry()
 {
-	/*local vector loc, norm, end;
-	local TraceHitInfo hitInfo;
-	local Actor traceHit;
-	local HostagePawn target;
-	`log("Trying to create a sentry");
-	`log("Pawn has "$CaptorPawn(Pawn).SentryPickups$" sentry pickups");
-	if(CaptorPawn(Pawn).SentryPickups > 0)
-	{
-		//`log(Pawn.Location$" and "$vector(Rotation));
-		//end = Location + normal(vector(Rotation));
-		end = Location + vector(Rotation)*10000;
-		//`log(end);
-		traceHit = trace(loc, norm, end, Pawn.Location, true,, hitInfo);
-		if(traceHit == none)
-		{
-			`log("Hit Nothing");
-		}
-		else if(traceHit.isA('HostagePawn'))
-		{
-			`log("Hit a hostage!");
-			target = HostagePawn(traceHit);
-			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
-			//{
-				HostageController(target.Controller).GoToSentry();
-				
-				PlaySound (sentryVoice,,,true,);
-				
-				CaptorPawn(Pawn).SentryPickups = CaptorPawn(Pawn).SentryPickups -1;
-			//}
-		}
-		else
-		{
-			`log("Missed all hostages");
-		}
-	}
-	else
-	{
-		`log("Not enough sentry pickups");
-	}*/
 	local HostagePawn hpawn;
 	local HostagePawn hostageP;
 	local bool isFollowing;
 	hpawn = None;
-	`log("Trying to create a mine");
+	`log("Trying to create a sentry");
 	`log("Pawn has "$CaptorPawn(Pawn).SentryPickups$" sentry pickups");
 	if(CaptorPawn(Pawn).SentryPickups > 0)
 	{
@@ -199,45 +121,6 @@ exec function CreateSentry()
 
 exec function CreateMine()
 {
-	/*local vector loc, norm, end;
-	local TraceHitInfo hitInfo;
-	local Actor traceHit;
-	local HostagePawn target;
-	`log("Trying to create a mine");
-	`log("Pawn has "$CaptorPawn(Pawn).MinePickups$" mine pickups");
-	if(CaptorPawn(Pawn).MinePickups > 0)
-	{
-		//`log(Pawn.Location$" and "$vector(Rotation));
-		//end = Location + normal(vector(Rotation));
-		end = Location + vector(Rotation)*10000;
-		//`log(end);
-		traceHit = trace(loc, norm, end, Pawn.Location, true,, hitInfo);
-		if(traceHit == none)
-		{
-			`log("Hit Nothing");
-		}
-		else if(traceHit.isA('HostagePawn'))
-		{
-			`log("Hit a hostage!");
-			target = HostagePawn(traceHit);
-			//if(Pawn.shTeamNum()==target.shTeamNum()) //Commented for test purposes only!
-			//{
-				HostageController(target.Controller).GoToRemoteMine();
-				
-				PlaySound (mineVoice,,,true,);
-				
-				CaptorPawn(Pawn).MinePickups = CaptorPawn(Pawn).MinePickups -1;
-			//}
-		}
-		else
-		{
-			`log("Missed all hostages");
-		}
-	}
-	else
-	{
-		`log("Not enough mine pickups");
-	}*/
 	local HostagePawn hpawn;
 	local HostagePawn hostageP;
 	local bool isFollowing;

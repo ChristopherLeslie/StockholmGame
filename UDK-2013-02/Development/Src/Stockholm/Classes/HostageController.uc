@@ -245,7 +245,7 @@ State Roaming{
     local float distance;
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+    //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
     lookAt(NoiseMaker);
   }
@@ -254,7 +254,7 @@ State Roaming{
   
   event seePlayer(Pawn seen){
 
-    `log(Pawn$" sees "$seen);
+    //`log(Pawn$" sees "$seen);
     if(seen.isA('HostagePawn')){
       return;
     }
@@ -365,7 +365,7 @@ State Cautious{
   
   event seePlayer(Pawn seen){//triggers for pawns that are players
 
-    `log(Pawn$"sees "$seen$", which is a player.");
+    //`log(Pawn$"sees "$seen$", which is a player.");
     
     if(seen.isA('HostagePawn')){
       return;
@@ -520,7 +520,7 @@ State BackingUp{
   debug("BACKING UP");
   pawnToFlee = frightener;
     while(pawnToFlee == none){
-      `log("looking for pawn to flee");
+      //`log("looking for pawn to flee");
       sleep(0.3f);
     }
   stopMoving();
@@ -543,7 +543,7 @@ State BackingUp{
     dest = dest+ Pawn.Location; //actual destination
 
 
-    `log("dest: "$dest);
+    //`log("dest: "$dest);
     
     lookAt(pawnToFlee);
     runInDirectionOf(dest);
@@ -576,7 +576,10 @@ State Fleeing{
   event SeePlayer(Pawn seen){
     if(seen == frightener){
       certainty = 100;
-      estimated_player_location = player.Location; //a perfect estimation!
+	  if(player != None)
+	  {
+		estimated_player_location = player.Location; //a perfect estimation!
+	  }
     }
   }
 
@@ -584,11 +587,14 @@ State Fleeing{
     local float the_distance;
     the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
+    //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
 
     if(frightener == NoiseMaker){
       certainty = 100;
-      estimated_player_location = player.Location;
+	  if(player != None)
+	  {
+		estimated_player_location = player.Location;
+	  }
     }
   }
 
@@ -715,7 +721,7 @@ State RemoteMineAttacking
      }
      
      else if( FindNavMeshPathToActor(dest) ){
-      `log(Pawn$" finding nav mesh path");
+      //`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest.Location);
         FlushPersistentDebugLines();
         NavigationHandle.DrawPathCache(,TRUE);
@@ -841,7 +847,7 @@ State RemoteMineWandering
     local float distance;
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+    //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
     lookAt(NoiseMaker);
   }
@@ -891,7 +897,7 @@ State RemoteMineWandering
 		MoveTo(dest);
 	}
 	else if( FindNavMeshPathToLocation(dest) ){
-	  `log(Pawn$" finding nav mesh path");
+	  //`log(Pawn$" finding nav mesh path");
 		NavigationHandle.SetFinalDestination(dest);
 		FlushPersistentDebugLines();
 		NavigationHandle.DrawPathCache(,TRUE);
@@ -899,7 +905,7 @@ State RemoteMineWandering
 		// move to the first node on the path
 		if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
 		{
-		  `log(Pawn$" moving to temp dest");
+		  //`log(Pawn$" moving to temp dest");
 		  DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
 		  DrawDebugSphere(TempDest,16,20,255,0,0,true);
 
@@ -951,7 +957,7 @@ State Sentry
 	
 	event SeePlayer(Pawn seen){
 		if(seen.isA('CaptorPawn')){
-			if(!StockHolmPawn(Pawn).sameTeam(captor)) //Enemy Captor
+			if(!StockHolmPawn(Pawn).sameTeam(CaptorPawn(seen))) //Enemy Captor
 			{
 				`log("I see youuuuuuuu");
 				currentPrioritizedTargetToFireAt = seen;
@@ -982,10 +988,25 @@ State Sentry
 			currentPrioritizedTargetToFireAt = none;
 			Pawn.StopFire(1);
 			Pawn.LockDesiredRotation(false,false);
-			Pawn.SetDesiredRotation(currentRotation,true,true,0.25);
+			Pawn.SetDesiredRotation(currentRotation,true,true,0.15);
 			currentRotation.pitch = currentRotation.pitch + (32677/13); 
 			currentRotation.yaw = currentRotation.yaw + (32677/13);
 			//`log("Rotating to "$currentRotation);
+			foreach WorldInfo.AllPawns(class'Pawn', P, Pawn.Location, SentryDistanceToTargetStart)
+			{
+				if(P.isA('CaptorPawn')) //Captor
+				{
+					if(!StockHolmPawn(Pawn).sameTeam(CaptorPawn(P))) //Enemy Captor
+					{
+						//`log("Enemy "$P);
+						if(CanSee(P))
+						{
+							//`log("SAW ENEMY "$P);
+							currentPrioritizedTargetToFireAt = P;
+						}
+					}
+				}
+			}
 			/*foreach WorldInfo.AllPawns(class'Pawn', P)
 			{
 				if(P.isA('CaptorPawn')) //Captor
@@ -1026,7 +1047,7 @@ State Sentry
 					}
 				}
 			}*/
-			sleep(0.3);
+			sleep(0.2);
 		}
 		else
 		{
@@ -1283,7 +1304,7 @@ defaultproperties
   
 
   bIsPlayer=True;
-  SentryDistanceToTargetStart = 400;
+  SentryDistanceToTargetStart = 1000;
   SentryDistanceToTargetStop = 3000;
   SentryMaxConsecutiveMisses = 20;
   WardingDistance = 450;

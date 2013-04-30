@@ -98,14 +98,14 @@ function Vector simplePathFindToPoint(Vector dest){
           }
 
    	if( FindNavMeshPathToLocation(dest) ){
-      	`log(Pawn$" finding nav mesh path");
+      	//`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest);
         //FlushPersistentDebugLines();
         NavigationHandle.DrawPathCache(,TRUE);
 
         // move to the first node on the path
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) ){
-        	`log(Pawn$" moving to temp dest");
+        	//`log(Pawn$" moving to temp dest");
           	//DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
          	// DrawDebugSphere(TempDest,16,20,255,0,0,true);
           	return TempDest;
