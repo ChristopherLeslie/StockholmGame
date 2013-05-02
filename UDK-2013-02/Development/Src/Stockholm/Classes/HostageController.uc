@@ -622,7 +622,12 @@ State Fleeing{
       lookAtVector(estimated_player_location);
       finishRotation();
       if(!canSee(frightener)){
-        goToState('Cautious');
+        if(StockholmPawn(Pawn).shTeamNum() != game.neutralTeamNum){
+          goHome();
+        }
+        else{
+          goToState('Cautious');
+        }
       }
     }
     

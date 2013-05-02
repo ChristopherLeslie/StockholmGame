@@ -50,8 +50,8 @@ event Tick(float DeltaTime)
 simulated function receivePersuasion(CaptorPawn captor){
   if(Health > 0){
     increaseLoyalty(captor.shTeamNum());
-    if(captor.shTeamNum() == shTeamNum()){
-      GoToState('Fleeing');
+    if(captor.shTeamNum() != shTeamNum() && !HostageController(Controller).isInState('Fleeing')){
+      HostageController(Controller).GoToState('Fleeing');
     }
     captorCapturingMe = captor;
     //`log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);

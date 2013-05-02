@@ -250,6 +250,7 @@ function Vector turn_until_you_can_run(){
 
 
 function debug(String s){
+  
 	//WorldInfo.Game.Broadcast(self,s);
 }
 
