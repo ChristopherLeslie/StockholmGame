@@ -245,7 +245,7 @@ State Roaming{
     local float distance;
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+    //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
     lookAt(NoiseMaker);
   }
@@ -254,7 +254,7 @@ State Roaming{
   
   event seePlayer(Pawn seen){
 
-    `log(Pawn$" sees "$seen);
+    //`log(Pawn$" sees "$seen);
     if(seen.isA('HostagePawn')){
       return;
     }
@@ -365,7 +365,7 @@ State Cautious{
   
   event seePlayer(Pawn seen){//triggers for pawns that are players
 
-    `log(Pawn$"sees "$seen$", which is a player.");
+    //`log(Pawn$"sees "$seen$", which is a player.");
     
     if(seen.isA('HostagePawn')){
       return;
@@ -520,7 +520,7 @@ State BackingUp{
   debug("BACKING UP");
   pawnToFlee = frightener;
     while(pawnToFlee == none){
-      `log("looking for pawn to flee");
+      //`log("looking for pawn to flee");
       sleep(0.3f);
     }
   stopMoving();
@@ -543,7 +543,7 @@ State BackingUp{
     dest = dest+ Pawn.Location; //actual destination
 
 
-    `log("dest: "$dest);
+    //`log("dest: "$dest);
     
     lookAt(pawnToFlee);
     runInDirectionOf(dest);
@@ -576,7 +576,10 @@ State Fleeing{
   event SeePlayer(Pawn seen){
     if(seen == frightener){
       certainty = 100;
-      estimated_player_location = player.Location; //a perfect estimation!
+	  if(player != None)
+	  {
+		estimated_player_location = player.Location; //a perfect estimation!
+	  }
     }
   }
 
@@ -584,11 +587,14 @@ State Fleeing{
     local float the_distance;
     the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
+    //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
 
     if(frightener == NoiseMaker){
       certainty = 100;
-      estimated_player_location = player.Location;
+	  if(player != None)
+	  {
+		estimated_player_location = player.Location;
+	  }
     }
   }
 
@@ -715,7 +721,7 @@ State RemoteMineAttacking
      }
      
      else if( FindNavMeshPathToActor(dest) ){
-      `log(Pawn$" finding nav mesh path");
+      //`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest.Location);
         FlushPersistentDebugLines();
         NavigationHandle.DrawPathCache(,TRUE);
@@ -723,13 +729,13 @@ State RemoteMineAttacking
         // move to the first node on the path
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
         {
-          `log(Pawn$" moving to temp dest");
+          //`log(Pawn$" moving to temp dest");
           DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
           DrawDebugSphere(TempDest,16,20,255,0,0,true);
 
 
           do{
-            `log("running in direction of temp dest");
+            //`log("running in direction of temp dest");
             MoveTo(TempDest);
             lookAt(dest);
 			if(VSize2D(Pawn.Location-MineTargetPawn.Location) < MineDistanceToBlowUp)
@@ -741,7 +747,7 @@ State RemoteMineAttacking
           VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius()); //or we've reached TempDest
 
           //MoveTo( TempDest, dest );
-          `log("done moving to temp dest");
+          //`log("done moving to temp dest");
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
@@ -773,7 +779,7 @@ State RemoteMineWandering
     local float distance;
     distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
+    //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
     lookAt(NoiseMaker);
   }
@@ -782,13 +788,17 @@ State RemoteMineWandering
   
   event seePlayer(Pawn seen){
 
-    `log(Pawn$" sees "$seen);
+    //`log(Pawn$" sees "$seen);
     if(seen.isA('CaptorPawn'))
 	{
 		if(!StockholmPawn(Pawn).sameTeam(StockholmPawn(seen)))
 		{
 			MineTargetPawn = seen;
 			GoToState('RemoteMineAttacking');
+		}
+		else
+		{
+			`log("RM: Same Team!");
 		}
     }
   }
@@ -830,99 +840,6 @@ State RemoteMineWandering
 	sleep(0.5);
    
     goTo('Roam');
-  /*local Vector dest;
-  local Vector random;
-  local int pathnodeNumber;
-  local Vector TempDest;
-  local Pawn pawnToAttack;
-
-
-  event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
-
-    `log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
-
-    lookAt(NoiseMaker);
-  }
-  
-
-  
-  event seePlayer(Pawn seen){
-
-    `log(Pawn$" sees "$seen);
-    if(seen.isA('CaptorPawn'))
-	{
-	  MineTargetPawn = seen;
-	  GoToState('RemoteMineAttacking');
-    }
-  }
-  
-
-  Begin:
-    Pawn.GroundSpeed = 300;
-	pathnodeNumber = 0;
-	pawnToAttack = None;
-    dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
-	`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
-
-  Roam:
-    FlushPersistentDebugLines();
-
-	if(VSize2d(Pawn.Location - dest) < 100)
-	{
-		`log("Close enough!");
-		pathnodeNumber = pathnodeNumber+1;
-		if(pathnodeNumber == Waypoints.Length)
-		{
-			`log("Reset!");
-			pathnodeNumber = 0;
-			ShuffleWaypointOrder();
-		}
-		`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
-		dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
-	}
-	
-	DrawDebugLine(Pawn.Location,dest,255,0,0,true);
-	DrawDebugSphere(dest,16,20,255,0,0,true);
-	lookAtVector(dest);
-	if( NavigationHandle.PointReachable( dest) ){
-		//`log("Moving to "$dest);
-		MoveTo(dest);
-	}
-	else if( FindNavMeshPathToLocation(dest) ){
-	  `log(Pawn$" finding nav mesh path");
-		NavigationHandle.SetFinalDestination(dest);
-		FlushPersistentDebugLines();
-		NavigationHandle.DrawPathCache(,TRUE);
-
-		// move to the first node on the path
-		if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
-		{
-		  `log(Pawn$" moving to temp dest");
-		  DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-		  DrawDebugSphere(TempDest,16,20,255,0,0,true);
-
-
-		  do{
-			runInDirectionOf(TempDest);
-			sleep(0.5);
-		  }
-		  until(NavigationHandle.PointReachable(dest) ||                //we can run straight to our goal 
-		  VSize2D(Pawn.Location-TempDest) < Pawn.GetCollisionRadius());   //or we've reached TempDest
-		  
-		}
-		else{
-		  `log(Pawn$" failure to do any path planning to get to "$dest);
-		  debug("failure case 1");
-		  sleep(1);
-		}
-	}
-	else{
-	  debug("failure case 2");
-	  sleep(1);
-	}
-	goTo('Roam');*/
 }
 
 
@@ -951,7 +868,7 @@ State Sentry
 	
 	event SeePlayer(Pawn seen){
 		if(seen.isA('CaptorPawn')){
-			if(!StockHolmPawn(Pawn).sameTeam(captor)) //Enemy Captor
+			if(!StockHolmPawn(Pawn).sameTeam(CaptorPawn(seen))) //Enemy Captor
 			{
 				`log("I see youuuuuuuu");
 				currentPrioritizedTargetToFireAt = seen;
@@ -983,8 +900,8 @@ State Sentry
 			Pawn.StopFire(1);
 			Pawn.LockDesiredRotation(false,false);
 			Pawn.SetDesiredRotation(currentRotation,true,true,0.25);
-			currentRotation.pitch = currentRotation.pitch + (32677/13); 
-			currentRotation.yaw = currentRotation.yaw + (32677/13);
+			currentRotation.pitch = currentRotation.pitch + (32677/9); 
+			currentRotation.yaw = currentRotation.yaw + (32677/9);
 			//`log("Rotating to "$currentRotation);
 			/*foreach WorldInfo.AllPawns(class'Pawn', P)
 			{
@@ -1026,7 +943,7 @@ State Sentry
 					}
 				}
 			}*/
-			sleep(0.3);
+			sleep(0.2);
 		}
 		else
 		{
@@ -1283,7 +1200,7 @@ defaultproperties
   
 
   bIsPlayer=True;
-  SentryDistanceToTargetStart = 400;
+  SentryDistanceToTargetStart = 1000;
   SentryDistanceToTargetStop = 3000;
   SentryMaxConsecutiveMisses = 20;
   WardingDistance = 450;
