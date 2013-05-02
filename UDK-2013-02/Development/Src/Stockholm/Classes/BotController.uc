@@ -13,7 +13,7 @@ simulated event PostBeginPlay()
 
  	`log("BOT CONTROLLER ON-LINE");
      super.PostBeginPlay();
-   
+    
 }
 
 event Tick(float DeltaTime)
@@ -318,6 +318,7 @@ defaultproperties
 {
   //Points to the UTFamilyInfo class for your custom character
   CharacterClass=class'UTFamilyInfo_Liandri_Male'
+  bIsPlayer = True
 
   close_enough_to_capture = 1000;
   
