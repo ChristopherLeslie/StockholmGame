@@ -64,17 +64,17 @@ static function PlayBodyExplosion(Pawn P)
 
 static function PlayDodgeSound(Pawn P)
 {
-	P.PlaySound(Default.DodgeSound, false, true);
+	//P.PlaySound(Default.DodgeSound, false, true);
 }
 
 static function PlayDoubleJumpSound(Pawn P)
 {
-	P.PlaySound(Default.DoubleJumpSound, false, true);
+	//P.PlaySound(Default.DoubleJumpSound, false, true);
 }
 
 static function PlayJumpSound(Pawn P)
 {
-	P.PlaySound(Default.DefaultJumpingSound, false, true);
+	//P.PlaySound(Default.DefaultJumpingSound, false, true);
 }
 
 static function PlayLandSound(Pawn P)
