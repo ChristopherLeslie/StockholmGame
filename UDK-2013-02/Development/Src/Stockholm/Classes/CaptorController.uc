@@ -156,10 +156,12 @@ exec function CreateMine()
 
 exec function SendHostageHome(){
 	local HostagePawn hostageP;
-	local bool isGoingHome;
+	local bool shouldntGoHome;
+	local string curstate;
 	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
-			isGoingHome = HostageController(hostageP.Controller).getStateName() == 'GoingHome';
-			if(captured(hostageP) && !isGoingHome){
+			curState = string(HostageController(hostageP.Controller).getStateName());
+			shouldntGoHome = curstate ~= "AtHome" || curstate ~= "GoingHome";
+			if(captured(hostageP) && !shouldntGoHome){
 				HostageController(hostageP.Controller).GoHome();
 				return;
 			}
@@ -172,7 +174,7 @@ exec function FollowMe(){
 	StockholmGame(WorldInfo.Game).dispHostageNums();
 	StockholmGame(WorldInfo.Game).dispBaseHostageNums();
 	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
-		isFollowing = HostageController(hostageP.Controller).getStateName() == 'Following';
+		isFollowing = string(HostageController(hostageP.Controller).getStateName()) ~= "Following";
 
 		if(captured(hostageP)&& !isFollowing){
 			HostageController(hostageP.Controller).followCaptor();

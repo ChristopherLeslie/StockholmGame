@@ -34,7 +34,7 @@ event Tick(float DeltaTime)
   if(ElapsedTime >= 0.1)
   {
 
-        //DrawDebugLine(Location,Location+400*normal(vector(Rotation)),255,0,0,true);
+ 
 
     
   }

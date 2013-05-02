@@ -205,5 +205,5 @@ defaultproperties
  	redTeamBaseInitialized = False
  	blueTeamBaseInitialized = False
 
- 	bUseClassicHUD = true;
+ 	//bUseClassicHUD = true;
 }
