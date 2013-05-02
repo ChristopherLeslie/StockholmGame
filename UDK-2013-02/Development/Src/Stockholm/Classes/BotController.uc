@@ -45,9 +45,6 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 }
 
-simulated function byte shTeamNum(){
-  return CaptorPawn(Pawn).shteamNum();
-}
 
 function bool capturable(HostagePawn hostageP){
 	//alive and different teams

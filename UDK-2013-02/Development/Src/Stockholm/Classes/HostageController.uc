@@ -242,8 +242,8 @@ State Roaming{
 
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+   // local float distance;
+    //distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
@@ -584,8 +584,8 @@ State Fleeing{
   }
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float the_distance;
-    the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+    //local float the_distance;
+    //the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
 
@@ -781,8 +781,8 @@ State RemoteMineWandering
 
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+    //local float distance;
+    //distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
@@ -1154,12 +1154,15 @@ State AtHome{
 
   event EndState(name nextStateName){
    
-      game.leaveBase(StockholmPawn(Pawn).shTeamNum());
+      game.leaveBase(shTeamNum());
+      Pawn.setLocation(game.baseByTeam(shTeamNum()).Location);
+      
       GoToState(nextStateName);
 
   }
   event BeginState(name previousSateName){
     game.enterBase(StockholmPawn(Pawn).shTeamNum());
+    Pawn.setLocation(game.penByTeam(shTeamNum()).Location);
   }
 
   Begin:

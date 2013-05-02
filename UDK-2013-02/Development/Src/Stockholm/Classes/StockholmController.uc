@@ -239,6 +239,10 @@ function Vector turn_until_you_can_run(){
 
 
 
+function byte shTeamNum(){
+  return StockholmPawn(Pawn).shTeamNum();
+}
+
 
 
 
