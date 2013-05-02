@@ -144,7 +144,7 @@ function capturedBy(CaptorPawn captor){
   
 
   myCaptor = captor;
-  debug("I been captured!");
+ 
   Pawn.Groundspeed = 400;
 
   if(myCaptor.Controller.isA('PlayerController')){
@@ -180,14 +180,12 @@ function GoHome(){
   else{
     homeZone = StockholmGame(WorldInfo.Game).redTeamBase();
   } 
-  debug("homeZone: "$homeZone);
-  DrawDebugSphere(homeZone.Location,16,20,255,0,0,true);
+
 
   GoToState('GoingHome');
 }
 
 function followCaptor(){
-  debug("followcaptorcommand");
   GoToState('Following');
 }
 
@@ -242,8 +240,8 @@ State Roaming{
 
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+   // local float distance;
+    //distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
@@ -268,7 +266,6 @@ State Roaming{
   
 
   Begin:
-    debug("ROAMING");
     Pawn.GroundSpeed = 100;
     percentOfTimeSpentJustLooking = 40;
     maxWaitTime = 2;
@@ -276,7 +273,6 @@ State Roaming{
     //Generate random vector "random" and random wait time
 
   ContinueRoaming:
-    FlushPersistentDebugLines();
 
     while(RandRange(1,100) < percentOfTimeSpentJustLooking ){
       random  = VRand();
@@ -285,13 +281,10 @@ State Roaming{
       //random.z = Pawn.Location.z;
 
       dest = random;
-      DrawDebugLine(Pawn.Location,dest,255,0,0,true);
-      DrawDebugSphere(dest,16,20,255,0,0,true);
 
       lookAtVector(dest);
       finishRotation();
       waitTime = RandRange(1,maxWaitTime);
-      debug("waiting for "$waitTime$" seconds.");
       sleep(waitTime);
     }
     
@@ -300,11 +293,9 @@ State Roaming{
     random = Pawn.Location + random * 250;
     random.z = Pawn.Location.z;
     dest = random;
-    DrawDebugLine(Pawn.Location,dest,255,0,0,true);
-    DrawDebugSphere(dest,16,20,255,0,0,true);
 
     wayPoint = simplePathFindToPoint(dest);
-                  //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
+                  
     runInDirectionOf(wayPoint);
     lookAtVector(wayPoint);
     sleep(0.5f);
@@ -350,10 +341,7 @@ State Cautious{
   
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
     local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
-
-    debug(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
-  
+    distance = VSize2d(Pawn.Location - NoiseMaker.Location);  
     
     lookAt(NoiseMaker);
   }
@@ -387,20 +375,15 @@ State Cautious{
 
   Begin:
     Pawn.GroundSpeed = 200;
-    debug("CAUTIOUS");
     stopMoving();
     percentWorried = 100;
     maxWaitTime = 2;
-    
-    //foreach WorldInfo.AllPawns(class'CaptorPawn', P){
-    //  captors.addItem(P);
-    //}
+
     goTo('ContinueCaution');
 
   ContinueCaution:
 
       waitTime = RandRange(1,maxWaitTime);
-      debug("waiting for "$waitTime$" seconds.");
       sleep(waitTime);
 
       if(!canSee(frightener)){
@@ -412,8 +395,7 @@ State Cautious{
         //random.z = Pawn.Location.z;
       
         dest = random;
-        DrawDebugLine(Pawn.Location,dest,255,0,0,true);
-        DrawDebugSphere(dest,16,20,255,0,0,true);
+
 
         lookAtVector(dest);
         finishRotation();
@@ -457,7 +439,6 @@ local float stopDistance;
     followDistance = 250;
     stopDistance = 250;
 
-     debug("FOLLOWING");
 
      offsetFromCaptor = Pawn.Location-myCaptor.Location;
      dest = myCaptor.Location + normal(offsetFromCaptor) * followDistance;
@@ -517,7 +498,6 @@ State BackingUp{
 
   Begin:
   Pawn.GroundSpeed = 200;
-  debug("BACKING UP");
   pawnToFlee = frightener;
     while(pawnToFlee == none){
       //`log("looking for pawn to flee");
@@ -528,7 +508,6 @@ State BackingUp{
   GoTo('ContinueBackingUp');
 
   ContinueBackingUp:
-    debug("continuing to back up.  dist = "$distToActor(pawnToFlee));
 
     distance = distToActor(pawnToFlee);
     if(distance > 1200){
@@ -584,8 +563,8 @@ State Fleeing{
   }
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float the_distance;
-    the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+    //local float the_distance;
+    //the_distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$the_distance$" away from him and it was "$loudness$" db");
 
@@ -600,7 +579,7 @@ State Fleeing{
 
   Begin:
     
-    debug("FLEEING");
+     
     
    
        PlaySound ( hostageScream,,,true,Pawn.Location);
@@ -628,7 +607,12 @@ State Fleeing{
       lookAtVector(estimated_player_location);
       finishRotation();
       if(!canSee(frightener)){
-        goToState('Cautious');
+        if(StockholmPawn(Pawn).shTeamNum() != game.neutralTeamNum){
+          goHome();
+        }
+        else{
+          goToState('Cautious');
+        }
       }
     }
     
@@ -639,7 +623,7 @@ State Fleeing{
 
     
     wayPoint = simplePathFindToPoint(dest);
-                  //DrawDebugSphere(wayPoint,32,20,255,255,0,true);
+                  // 
     runInDirectionOf(wayPoint);
     lookAtVector(wayPoint);
     sleep(0.5f);
@@ -711,11 +695,11 @@ State RemoteMineAttacking
     `log(Pawn$" attempting navigation to mine target "$MineTargetPawn);
      
      if( NavigationHandle.ActorReachable( dest) ){
-        FlushPersistentDebugLines();
+ 
          Pawn.GroundSpeed = 500;
          lookAt(dest);
          MoveToward(dest,dest);
-         //debug("sleeping1");
+ 
          //sleep(1);
          sleep(0.5);
      }
@@ -723,15 +707,14 @@ State RemoteMineAttacking
      else if( FindNavMeshPathToActor(dest) ){
       //`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest.Location);
-        FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
+ 
 
         // move to the first node on the path
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) )
         {
           //`log(Pawn$" moving to temp dest");
-          DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-          DrawDebugSphere(TempDest,16,20,255,0,0,true);
+           
+           
 
 
           do{
@@ -776,8 +759,8 @@ State RemoteMineWandering
 
 
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);
+    //local float distance;
+    //distance = VSize2d(Pawn.Location - NoiseMaker.Location);
 
     //`log(Pawn$" heard a "$NoiseType$" noise from "$NoiseMaker $" that was "$distance$" away from him and it was "$loudness$" db");
 
@@ -812,7 +795,7 @@ State RemoteMineWandering
     //Generate random vector "random" and random wait time
 
   Roam:
-    FlushPersistentDebugLines();
+ 
 	`log("Here");
     //random = VRand();
     //random = Pawn.Location + random * 250;
@@ -831,8 +814,8 @@ State RemoteMineWandering
 		`log("Number: "$pathnodeNumber$". Pathnode: "$WaypointOrder[pathnodeNumber]);
 		dest = Waypoints[WaypointOrder[pathnodeNumber]].Location;
 	}
-	DrawDebugLine(Pawn.Location,dest,255,0,0,true);
-	DrawDebugSphere(dest,16,20,255,0,0,true);
+	 
+	 
 
     wayPoint = simplePathFindToPoint(dest);
     runInDirectionOf(wayPoint);
@@ -1129,7 +1112,7 @@ State GoingHome{
 
 
   ContinuingToGoHome:
-    debug("GOING HOME");
+ 
       if(distToActor(dest) < 100){
         runTo(dest.Location);
         sleep(1);
@@ -1145,16 +1128,36 @@ State GoingHome{
 }
 
 State AtHome{
-  
+  local Vector teleport_offset;
+  local Vector teleport_dest;
+  local PathNode my_pen;
+  local Vector pawn_size;
+  local bool success;
 
   event EndState(name nextStateName){
-   
-      game.leaveBase(StockholmPawn(Pawn).shTeamNum());
-      GoToState(nextStateName);
+        WorldInfo.Game.Broadcast(self,string(nextStateName));
+
+        game.leaveBase(shTeamNum());
+        success = teleportToActorSafely(game.baseByTeam(shTeamNum()));
+         if(!success){
+            debug("FAILED TO FIND A PLACE TO TELEPORT TO");
+         }
+        GoToState(nextStateName);
+    
 
   }
-  event BeginState(name previousSateName){
+  event BeginState(name previousStateName){
+
+    pawn_size.x = Pawn.getCollisionRadius();
+    pawn_size.y = pawn_size.x;
+    pawn_size.z = Pawn.getCollisionHeight();
+
+
     game.enterBase(StockholmPawn(Pawn).shTeamNum());
+    success = teleportToActorSafely(game.penByTeam(shTeamNum()));
+    if(!success){
+      debug("FAILED TO FIND A PLACE TO TELEPORT TO");
+    }
   }
 
   Begin:
@@ -1167,8 +1170,9 @@ State AtHome{
 }
 
 
-
-
+function debug(String s){
+  WorldInfo.Game.Broadcast(self,s);
+}
 
 
 

@@ -20,6 +20,12 @@ var bool blueTeamBaseInitialized;
 var bool redTeamBaseInitialized;
 
 
+var PathNode privateBlueTeamPen;
+var PathNode privateRedTeamPen;
+
+var bool blueTeamPenInitialized;
+var bool redTeamPenInitialized;
+
 
 
 event PostBeginPlay()
@@ -112,6 +118,51 @@ function PathNode redTeamBase(){
 	} 
 }
 
+function PathNode baseByTeam(byte the_team_num){
+	if(the_team_num == redTeamNum){
+		return redTeamBase();
+	}
+	if(the_team_num == blueTeamNum){
+		return blueTeamBase();
+	}
+}
+function PathNode blueTeamPen(){
+	local PathNode node;
+	if(blueTeamPenInitialized){
+		return PrivateBlueTeamPen;
+	}
+	foreach AllActors( class 'PathNode', node) { //iterate through PlayerPawns
+		if(node.tag == 'bluePen'){
+			PrivateBlueTeamPen = node;
+			blueTeamPenInitialized = true;
+			return node;
+		}
+	} 
+}
+
+function PathNode redTeamPen(){
+	local PathNode node;
+	if(redTeamPenInitialized){
+		return PrivateRedTeamPen;
+	}
+	foreach AllActors( class 'PathNode', node) { //iterate through PlayerPawns
+		if(node.tag == 'redPen'){
+			PrivateredTeamPen = node;
+			redTeamPenInitialized = true;
+			return node;
+		}
+	} 
+}
+
+function PathNode penByTeam(byte the_team_num){
+	if(the_team_num == redTeamNum){
+		return redTeamPen();
+	}
+	if(the_team_num == blueTeamNum){
+		return blueTeamPen();
+	}
+}
+
 
 
 
@@ -154,5 +205,5 @@ defaultproperties
  	redTeamBaseInitialized = False
  	blueTeamBaseInitialized = False
 
- 	bUseClassicHUD = true;
+ 	//bUseClassicHUD = true;
 }

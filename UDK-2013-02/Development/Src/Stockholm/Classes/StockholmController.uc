@@ -93,26 +93,26 @@ function Vector simplePathFindToPoint(Vector dest){
      	return(dest);
     }
           if(Pawn.isA('CaptorPawn')){
-             DrawDebugLine(Pawn.Location,dest,255,0,255,true);
-	         	 DrawDebugSphere(dest,16,20,255,0,255,true);
+ 
+ 
           }
 
    	if( FindNavMeshPathToLocation(dest) ){
       	//`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest);
-        //FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
+ 
+ 
 
         // move to the first node on the path
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) ){
         	//`log(Pawn$" moving to temp dest");
-          	//DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-         	// DrawDebugSphere(TempDest,16,20,255,0,0,true);
+ 
+ 
           	return TempDest;
         }
         else{
         `log(Pawn$" failure to do any path planning to get to "$dest);
-        debug("failure case 1");
+ 
         return turn_until_you_can_run();
         
         }
@@ -122,7 +122,7 @@ function Vector simplePathFindToPoint(Vector dest){
     
     
     
-   	debug("failure case 2");
+   	//debug("failure case 2");
 
     return turn_until_you_can_run();
     
@@ -153,36 +153,37 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
       return(dest);
     }
           if(Pawn.isA('CaptorPawn')){
-             DrawDebugLine(Pawn.Location,dest,255,0,255,true);
-             DrawDebugSphere(dest,16,20,255,0,255,true);
+ 
+ 
           }
 
     if( FindNavMeshPathToLocation(dest) ){
         //`log(Pawn$" finding nav mesh path");
         NavigationHandle.SetFinalDestination(dest);
-        //FlushPersistentDebugLines();
-        NavigationHandle.DrawPathCache(,TRUE);
+ 
+ 
 
         // move to the first node on the path
         if( NavigationHandle.GetNextMoveLocation( TempDest, Pawn.GetCollisionRadius()) ){
           //`log(Pawn$" moving to temp dest");
-            //DrawDebugLine(Pawn.Location,TempDest,255,0,0,true);
-          // DrawDebugSphere(TempDest,16,20,255,0,0,true);
+ 
+ 
             return TempDest;
         }
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
-          debug("failure case 1");
+ 
           return findRandomDest().Location;
         
         }
     }
     
         
+
     
     
     
-    debug("failure case 2");
+    //debug("failure case 2");
 
     return findRandomDest().Location;
     
@@ -228,7 +229,7 @@ function Vector turn_until_you_can_run(){
     dest_attempt = Pawn.Location + normal(vector(xyOrientation))*forward_looking_distance;
 
     if(Pawn.isA('CaptorPawn')){
-      DrawDebugLine(Pawn.Location,dest_attempt,255,0,0,true);
+ 
     }
 
   }until( adjustment_counter > 400 || NavigationHandle.PointReachable(dest_attempt));
@@ -239,8 +240,35 @@ function Vector turn_until_you_can_run(){
 
 
 
+function byte shTeamNum(){
+  return StockholmPawn(Pawn).shTeamNum();
+}
 
 
+
+
+function bool teleportToActorSafely(Actor teleport_target){
+  local vector offset;
+  local Pawn Neighbor;
+  local bool retVal;
+
+  forEach CollidingActors(class'Pawn', Neighbor, 32, teleport_target.Location)
+  {
+  debug("Found a colliding pawn:"@Neighbor);
+  break;
+  }
+
+  retVal = teleport_target.findSpot(Pawn.getCollisionExtent(),offset);
+  drawDebugSphere(teleport_target.Location+offset,16,10,255,255,255);
+
+  if(retVal){
+    Pawn.setLocation(teleport_target.Location+offset);
+  }
+  else{
+    debug("trouble teleporting safely");
+  }
+  return retVal;
+}
 
 
 
@@ -250,7 +278,8 @@ function Vector turn_until_you_can_run(){
 
 
 function debug(String s){
-	//WorldInfo.Game.Broadcast(self,s);
+  
+	WorldInfo.Game.Broadcast(self,s);
 }
 
 

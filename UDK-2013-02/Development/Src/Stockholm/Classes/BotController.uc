@@ -45,9 +45,6 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 }
 
-simulated function byte shTeamNum(){
-  return CaptorPawn(Pawn).shteamNum();
-}
 
 function bool capturable(HostagePawn hostageP){
 	//alive and different teams
@@ -80,7 +77,7 @@ function HostagePawn closestHostage(){
       	}
 
     }
-    //debug("closest hostage is "$VSize2D(closestHostage.Location-Pawn.Location)$" units away"); 
+  
     return closestHostage;
 }
 
@@ -101,7 +98,7 @@ function LookAtPawn(Pawn p){
 	local Vector out_Location;
 	local Rotator out_Rotation;
 	p.Controller.GetActorEyesViewPoint(out_Location, out_Rotation);
-	DrawDebugSphere(out_Location,16,20,255,0,0,true);
+ 
 	lookAtVector(out_Location);
 }
 
@@ -169,7 +166,7 @@ auto State idle{
 }
 State Sit{
 	Begin:
-		debug("SITTING");
+ 
 		sleep(3);
 		if(!StockholmGame(WorldInfo.Game).teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
 			GoToState('LookForHostages');
@@ -180,7 +177,7 @@ State Sit{
 State LookForHostages{
 
 	Begin:
-		debug("LOOKING FOR HOSTAGES");
+ 
 		
 		if(game.teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
 			GoToState('Sit');
@@ -202,7 +199,7 @@ State ApproachTargetHostage{
 
 	Begin:
 		Pawn.GroundSpeed = 400;
-		debug("approaching target hostage");
+ 
 		GoTo('ContinueApproaching');
 
 	ContinueApproaching:
@@ -210,7 +207,7 @@ State ApproachTargetHostage{
 	    if(distToActor(hostageTarget) < close_enough_to_capture){
 	    	GoToState('Capturing');
 	    }
-	    	DrawDebugSphere(hostageTarget.Location,16,20,0,0,255,true);
+ 
 		wayPoint = simplePathFindToActorOrRandom(hostageTarget);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
@@ -245,7 +242,7 @@ State Capturing{
 
 
 	Begin:
-		debug("I'm a "$Pawn$" looking to capture "$hostageTarget$" with a "$Pawn.Weapon);
+ 
 		GoTo('ContinueCapturing');
 
 	ContinueCapturing:
@@ -307,7 +304,7 @@ State Capturing{
 
 
 function debug(String s){
-  WorldInfo.Game.Broadcast(self,s);
+  //WorldInfo.Game.Broadcast(self,s);
 }
 
 
