@@ -251,23 +251,55 @@ function bool teleportToActorSafely(Actor teleport_target){
   local vector offset;
   local Pawn Neighbor;
   local bool retVal;
+  local vector teleport_vector;
+  local float oldRad;
+  local float oldHeight;
 
   forEach CollidingActors(class'Pawn', Neighbor, 32, teleport_target.Location)
   {
-  debug("Found a colliding pawn:"@Neighbor);
+  return false;
   break;
   }
 
   retVal = teleport_target.findSpot(Pawn.getCollisionExtent(),offset);
-  drawDebugSphere(teleport_target.Location+offset,16,10,255,255,255);
+  teleport_vector = teleport_target.Location+offset;
+  Pawn.setLocation(teleport_vector);
 
   if(retVal){
-    Pawn.setLocation(teleport_target.Location+offset);
+    Pawn.setLocation(teleport_vector);
   }
   else{
     debug("trouble teleporting safely");
   }
   return retVal;
+}
+
+function vector myFindSpot(Vector first_target_location){
+  local bool success;
+  local vector target_location;
+  local float dist_to_move;
+  local vector rand;
+  local vector offset;
+  local Pawn Neighbor;
+
+  target_location = first_target_location;
+    success = false;
+    while(!success){
+      success = true;
+     forEach CollidingActors(class'Pawn', Neighbor, 32, target_location) {
+        success = false;
+        dist_to_move = Neighbor.getCollisionRadius()+Pawn.getCollisionRadius();
+        rand = VRand();
+        rand.z = 0;
+        rand = normal(rand);
+        offset = rand*dist_to_move;
+        target_location = Neighbor.Location+offset;
+        break;
+      }
+
+    }
+    return target_location;
+
 }
 
 

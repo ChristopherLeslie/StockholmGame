@@ -1142,20 +1142,19 @@ State AtHome{
          if(!success){
             debug("FAILED TO FIND A PLACE TO TELEPORT TO");
          }
-        GoToState(nextStateName);
+         else{
+          GoToState(nextStateName);
+        }
     
 
   }
   event BeginState(name previousStateName){
 
-    pawn_size.x = Pawn.getCollisionRadius();
-    pawn_size.y = pawn_size.x;
-    pawn_size.z = Pawn.getCollisionHeight();
-
-
-    game.enterBase(StockholmPawn(Pawn).shTeamNum());
     success = teleportToActorSafely(game.penByTeam(shTeamNum()));
-    if(!success){
+    if(success){
+        game.enterBase(StockholmPawn(Pawn).shTeamNum());
+    }
+    else{
       debug("FAILED TO FIND A PLACE TO TELEPORT TO");
     }
   }
