@@ -41,7 +41,11 @@ function runTo(Vector destination){
     SetDestinationPosition(destination);
     bPreciseDestination = True;
 }
-
+function stopMoving(){
+  Pawn.ZeroMovementVariables();
+  setDestinationPosition(Location);
+  bPreciseDestination = false;
+}
 
 function LookAt(Actor a){
 
@@ -263,9 +267,12 @@ function byte shTeamNum(){
   return StockholmPawn(Pawn).shTeamNum();
 }
 
-function bool canTeleportToLocationSafely(Vector targ){
+function bool canTeleportToLocationSafely(Vector teleport_location){
   local Pawn Neighbor;
-   forEach CollidingActors(class'Pawn', Neighbor, VSize(Pawn.getCollisionExtent()), targ)
+  local float collisionRadius;
+  collisionRadius = VSize(Pawn.getCollisionExtent());
+  
+   forEach VisibleCollidingActors(class'Pawn', Neighbor,collisionRadius,teleport_location,false,0*VRand(),true)
   {
   return false;
   }
@@ -289,6 +296,7 @@ function bool teleportToActorSafely(Actor teleport_target){
 
   if(retVal){
     Pawn.setLocation(teleport_vector);
+    stopMoving();
   }
   else{
     debug("trouble teleporting safely");

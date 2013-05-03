@@ -122,11 +122,7 @@ local Rotator final_rot;
         Pawn.SetDesiredRotation(final_rot,true);
 }
 
-function stopMoving(){
-  Pawn.ZeroMovementVariables();
-  setDestinationPosition(Location);
-  bPreciseDestination = false;
-}
+
 
 
 function reactToSeeingAPlayer(Pawn seen){
@@ -1159,12 +1155,16 @@ State AtHome{
 
         game.leaveBase(shTeamNum());
         success = teleportToActorSafely(game.baseByTeam(shTeamNum()));
-         if(!success){
-            debug("FAILED TO FIND A PLACE TO TELEPORT TO");
-            GoToState('AtHome');
-         }
-    
 
+  }
+
+  event Landed (Vector hitNormal, Actor FloorActor){
+    myFeign();
+    super.Landed(hitNormal,FloorActor);
+  }
+  event Falling(){
+    super.Falling();
+    myFeign();
   }
 
 
@@ -1173,6 +1173,7 @@ State AtHome{
 
   AttemptToTeleport:
       teleport_actor = game.penByteam(shTeamNum());
+      
       drawdebugsphere(teleport_actor.location,24,10,255,255,255);
       success = teleportToActorSafely(teleport_actor);
     if(success){
@@ -1193,7 +1194,23 @@ State AtHome{
     
     
 }
-
+function myFeign(){
+  if(StockholmPawn(Pawn).bFeigningDeath){
+    return;
+  }
+  else{
+    //StockholmPawn(Pawn).playFeignDeath();
+    StockholmPawn(Pawn).forceRagdoll();
+  }
+}
+function myGetUp(){
+  if(StockholmPawn(Pawn).bFeigningDeath){
+    StockholmPawn(Pawn).playFeignDeath();
+  }
+  else{
+    return;
+  }
+}
 
 function debug(String s){
   WorldInfo.Game.Broadcast(self,s);

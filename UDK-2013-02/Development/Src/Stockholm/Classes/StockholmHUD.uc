@@ -4,7 +4,7 @@ var StockholmGame game;
 function DrawGameHud()
 {
 	game = StockholmGame(WorldInfo.Game);
-	
+	super.DrawGameHud();
 	Canvas.SetPos(600,100);
 	
 	//Canvas.DrawTile(Texture2D'MyPackage.Diablo_III_Large_transparency_correct',512,512,0,0,512,512);
