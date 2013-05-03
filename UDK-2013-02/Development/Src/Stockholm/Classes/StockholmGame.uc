@@ -37,8 +37,13 @@ event PostBeginPlay()
 }
 
 
+function int currentTime(){
+	local vector rand;
+	rand = VRand();
+	return int(rand.x*100);
+}
 
-function int hostagesByTeam(byte team_number){
+function int hostagesByTeam(byte team_number){//0 is red, 1 is blue
 	if(team_number == redTeamNum){
 		return redHostages;
 	}
