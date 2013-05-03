@@ -1,4 +1,5 @@
-class StockholmGame extends UTDeathMatch;
+class StockholmGame extends UTDeathMatch
+config(StockholmGame);
 
 var byte redTeamNum;
 var byte blueTeamNum;
@@ -25,7 +26,6 @@ var PathNode privateRedTeamPen;
 
 var bool blueTeamPenInitialized;
 var bool redTeamPenInitialized;
-
 
 
 event PostBeginPlay()
@@ -83,8 +83,11 @@ function killHostage(byte team_number){
 	totalHostages -=1;
 	dispHostageNums();
 }
-function dispHostageNums(){
-	Broadcast(self,"Red: "$redHostages$". Blue: "$blueHostages$". Neut: "$neutralHostages$". Total: "$totalHostages);
+function string dispHostageNums(){
+	local string response;
+		response = "Red: "$redHostages$". Blue: "$blueHostages$". Neut: "$neutralHostages$". Total: "$totalHostages;
+	//Broadcast(self,response);
+	return response;
 }
 function dispBaseHostageNums(){
 	Broadcast(self,"Red Base: "$redBaseHostages$".  Blue Base: "$blueBaseHostages);
@@ -189,6 +192,9 @@ function AddDefaultInventory( pawn PlayerPawn )
 
 defaultproperties
 {
+	bUseClassicHUD = true;
+	HUDType=class'Stockholm.StockholmHUD'
+	
 	DefaultPawnClass = class'CaptorPawn'
 	PlayerControllerClass = class'CaptorController'
     
@@ -205,5 +211,4 @@ defaultproperties
  	redTeamBaseInitialized = False
  	blueTeamBaseInitialized = False
 
- 	//bUseClassicHUD = true;
 }
