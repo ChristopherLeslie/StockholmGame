@@ -27,20 +27,25 @@ var PathNode privateRedTeamPen;
 var bool blueTeamPenInitialized;
 var bool redTeamPenInitialized;
 
+var int privatecurrentTime;
+
 
 event PostBeginPlay()
 {
 	Super.PostBeginPlay();
 	WorldInfo.Game.Broadcast(self,"we are playing a game of STOCKHOLM");
 	`log("We are playing a game of STOCKHOLM");
-	
+	privatecurrentTime = 90;
+	setTimer(1,true,'timePasses');
 }
 
 
 function int currentTime(){
-	local vector rand;
-	rand = VRand();
-	return int(rand.x*100);
+	return privatecurrentTime;
+}
+
+function timePasses(){
+	privatecurrentTime--;
 }
 
 function int hostagesByTeam(byte team_number){//0 is red, 1 is blue
