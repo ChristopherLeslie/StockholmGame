@@ -43,6 +43,24 @@ function runTo(Vector destination){
 }
 
 
+function LookAt(Actor a){
+
+local Rotator final_rot;
+        final_rot = Rotator(a.Location-Pawn.Location);
+        Pawn.LockDesiredRotation(false,false);
+        Pawn.SetDesiredRotation(final_rot,true);
+}
+
+function LookAtVector(Vector locationVec){
+
+local Rotator final_rot;
+        final_rot = Rotator(locationVec-Pawn.Location);
+        Pawn.LockDesiredRotation(false,false);
+        Pawn.SetDesiredRotation(final_rot,true);
+}
+
+
+
 
 function bool FindNavMeshPathToLocation(Vector dest)
   {
@@ -173,6 +191,7 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
  
+          debug("failure case 1");
           return findRandomDest().Location;
         
         }
@@ -183,7 +202,7 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
     
     
     
-    //debug("failure case 2");
+    debug("failure case 2");
 
     return findRandomDest().Location;
     
@@ -244,8 +263,14 @@ function byte shTeamNum(){
   return StockholmPawn(Pawn).shTeamNum();
 }
 
-
-
+function bool canTeleportToLocationSafely(Vector targ){
+  local Pawn Neighbor;
+   forEach CollidingActors(class'Pawn', Neighbor, VSize(Pawn.getCollisionExtent()), targ)
+  {
+  return false;
+  }
+  return true;
+}
 
 function bool teleportToActorSafely(Actor teleport_target){
   local vector offset;
@@ -255,15 +280,12 @@ function bool teleportToActorSafely(Actor teleport_target){
   local float oldRad;
   local float oldHeight;
 
-  forEach CollidingActors(class'Pawn', Neighbor, 32, teleport_target.Location)
-  {
-  return false;
-  break;
+  if(!canTeleportToLocationSafely(teleport_target.Location)){
+    return false;
   }
 
   retVal = teleport_target.findSpot(Pawn.getCollisionExtent(),offset);
   teleport_vector = teleport_target.Location+offset;
-  Pawn.setLocation(teleport_vector);
 
   if(retVal){
     Pawn.setLocation(teleport_vector);
@@ -273,39 +295,6 @@ function bool teleportToActorSafely(Actor teleport_target){
   }
   return retVal;
 }
-
-function vector myFindSpot(Vector first_target_location){
-  local bool success;
-  local vector target_location;
-  local float dist_to_move;
-  local vector rand;
-  local vector offset;
-  local Pawn Neighbor;
-
-  target_location = first_target_location;
-    success = false;
-    while(!success){
-      success = true;
-     forEach CollidingActors(class'Pawn', Neighbor, 32, target_location) {
-        success = false;
-        dist_to_move = Neighbor.getCollisionRadius()+Pawn.getCollisionRadius();
-        rand = VRand();
-        rand.z = 0;
-        rand = normal(rand);
-        offset = rand*dist_to_move;
-        target_location = Neighbor.Location+offset;
-        break;
-      }
-
-    }
-    return target_location;
-
-}
-
-
-
-
-
 
 
 

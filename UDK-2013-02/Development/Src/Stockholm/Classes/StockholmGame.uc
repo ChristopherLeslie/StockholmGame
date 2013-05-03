@@ -35,6 +35,9 @@ event PostBeginPlay()
 	`log("We are playing a game of STOCKHOLM");
 	
 }
+
+
+
 function int hostagesByTeam(byte team_number){
 	if(team_number == redTeamNum){
 		return redHostages;
@@ -45,11 +48,20 @@ function int hostagesByTeam(byte team_number){
 	else if(team_number == neutralTeamNum){
 		return neutralHostages;
 	}
-	dispHostageNums();
 }
+
+
 function bool teamByNumHasAllHostages(byte team_number){
 	return hostagesByTeam(team_number) >= totalHostages;
-	dispHostageNums();
+}
+
+function int capturableHostagesForTeam(byte team_number){
+	if(team_number == blueTeamNum){
+		return hostagesByTeam(redTeamNum) - redBaseHostages + hostagesByTeam(neutralTeamNum);
+	}
+	if(team_number == redTeamNum){
+		return hostagesByTeam(blueTeamNum) - blueBaseHostages + hostagesByTeam(neutralTeamNum);
+	}
 }
 
 function enterBase(byte team_number){

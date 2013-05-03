@@ -186,7 +186,17 @@ function GoHome(){
 }
 
 function followCaptor(){
-  GoToState('Following');
+  if(isInState('AtHome')){
+    if(canTeleportToLocationSafely(game.BaseByTeam(shTeamNum()).Location)){
+      GoToState('Following');
+    }
+    else{
+      debug("try again in a second");
+    }
+  }
+  else{
+      GoToState('Following');
+  }
 }
 
 
@@ -1129,10 +1139,11 @@ State GoingHome{
 
 State AtHome{
   local Vector teleport_offset;
-  local Vector teleport_dest;
+  local actor teleport_actor;
   local PathNode my_pen;
   local Vector pawn_size;
   local bool success;
+
 
   event EndState(name nextStateName){
         WorldInfo.Game.Broadcast(self,string(nextStateName));
@@ -1141,28 +1152,34 @@ State AtHome{
         success = teleportToActorSafely(game.baseByTeam(shTeamNum()));
          if(!success){
             debug("FAILED TO FIND A PLACE TO TELEPORT TO");
+            GoToState('AtHome');
          }
-         else{
-          GoToState(nextStateName);
-        }
     
 
   }
-  event BeginState(name previousStateName){
 
-    success = teleportToActorSafely(game.penByTeam(shTeamNum()));
+
+  Begin:
+    GoTo('AttemptToTeleport');
+
+  AttemptToTeleport:
+      teleport_actor = game.penByteam(shTeamNum());
+      drawdebugsphere(teleport_actor.location,24,10,255,255,255);
+      success = teleportToActorSafely(teleport_actor);
     if(success){
         game.enterBase(StockholmPawn(Pawn).shTeamNum());
+        GoTo('Lounge');
     }
     else{
       debug("FAILED TO FIND A PLACE TO TELEPORT TO");
+      sleep(0.5);
+      GoTo('AttemptToTeleport');
     }
-  }
-
-  Begin:
  
-    GoTo('Lounge');
+
   Lounge:
+
+
 
     
     
