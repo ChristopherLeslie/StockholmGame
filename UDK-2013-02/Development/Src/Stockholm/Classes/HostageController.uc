@@ -126,7 +126,7 @@ local Rotator final_rot;
 }
 
 function bool almostHome(){
-  return isInState('AtHome') || (isInState('GoingHome') && VSize2d(Pawn.Location-homezone.Location) < 1500);
+  return isInState('AtHome') || (isInState('GoingHome') && VSize2d(Pawn.Location-homezone.Location) < 2000);
 }
 
 
@@ -1138,9 +1138,10 @@ State GoingHome{
 
   ContinuingToGoHome:
  
-      if(distToActor(dest) < 100){
+      if(distToActor(dest) < 750){
         runTo(dest.Location);
-        sleep(1);
+        UTPawn(Pawn).doJump(true);
+        sleep(0.3);
         GoToState('AtHome');
       }
      wayPoint = simplePathFindToActor(dest);
@@ -1177,6 +1178,8 @@ State AtHome{
       success = teleportToActorSafely(teleport_actor);
     if(success){
         game.enterBase(StockholmPawn(Pawn).shTeamNum());
+        sleep(1);
+        myFeign();
         GoTo('Lounge');
     }
     else{

@@ -300,7 +300,11 @@ function bool teleportToActorSafely(Actor teleport_target){
   teleport_vector = teleport_target.Location+offset;
 
   if(retVal){
+    UTPawn(Pawn).playTeleportEffect(true,true);
     Pawn.setLocation(teleport_vector);
+    UTPawn(Pawn).playTeleportEffect(false,true);
+
+
     stopMoving();
   }
   else{
