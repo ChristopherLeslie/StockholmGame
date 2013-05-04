@@ -206,7 +206,7 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
     
     
     
-    debug("failure case 2");
+    debug(Pawn$": failure case 2");
 
     return findRandomDest().Location;
     
