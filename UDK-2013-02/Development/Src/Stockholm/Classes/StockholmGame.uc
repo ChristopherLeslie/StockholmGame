@@ -81,28 +81,31 @@ function byte whoWon(){
 }
 
 function GameEnd(){
+	if(!gameOver){
+		if(whosWinning() == blueTeamNum){
+			BlueTeamWin();
+			return;
+		}
+		if(whosWinning() == redTeamNum){
+			RedTeamWin();
+			return;
+		}
 
-	if(whosWinning() == blueTeamNum){
-		BlueTeamWin();
-		return;
-	}
-	if(whosWinning() == redTeamNum){
-		RedTeamWin();
-		return;
+		NobodyWin();
 	}
 
-	NobodyWin();
-	reset();
 
 }
 
 function BlueTeamWin(){
 	setwinner(blueTeamNum);
 	gameOver = true;
+	//youve won
 }
 function RedTeamWin(){
 	setwinner(redTeamNum);
 	gameOver = true;
+	//youve lost
 }
 function NobodyWin(){
 	setwinner(nobodyTeamNum);

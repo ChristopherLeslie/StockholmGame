@@ -28,21 +28,40 @@ function DrawGameHud()
         }
     }
     else{
-    	super.DrawGameHud();
+		
+		super.DrawGameHud();
+		
+		//SCORE
+		
+		//ITEMS		
 		
 		NumberOfWardItems = CaptorPawn(PlayerOwner.Pawn).WardPickups;
 		NumberOfSentryItems = CaptorPawn(PlayerOwner.Pawn).SentryPickups;
 		NumberOfMineItems = CaptorPawn(PlayerOwner.Pawn).MinePickups;
 
-    	Canvas.SetPos(600,100);
-    	
-    	//Canvas.DrawTile(Texture2D'MyPackage.Diablo_III_Large_transparency_correct',512,512,0,0,512,512);
-    	
+    	Canvas.SetPos(50,300);
+    	Canvas.DrawTile(Texture2D'Stockholm_Sounds.Mine_Alpha',100,100,0,0,512,512);
+    	Canvas.SetPos(50,340);
+		Canvas.DrawText(NumberOfMineItems);
+		
+		Canvas.SetPos(50,400);
+		Canvas.DrawTile(Texture2D'Stockholm_Sounds.Turret_Alpha',100,100,0,0,512,512);
+		Canvas.SetPos(50,440);
+		Canvas.DrawText(NumberOfSentryItems);
+		
+		Canvas.SetPos(50,500);
+		Canvas.DrawTile(Texture2D'Stockholm_Sounds.Ward_Alpha',100,100,0,0,512,512);
+		Canvas.SetPos(50,540);
+		Canvas.DrawText(NumberOfWardItems);
+		
+		//TIME
     	Canvas.SetPos(200,200);
     	Canvas.SetDrawColor(255,255,255,255);
         Canvas.Font = class'Engine'.static.GetMediumFont();
     	Canvas.DrawText(game.currentTime());
     	
+		//AMMO AND HEALTH
+		
     	if ( !PlayerOwner.IsDead() && !UTPlayerOwner.IsInState('Spectating'))
     	{
     		DrawBar("Health",PlayerOwner.Pawn.Health, PlayerOwner.Pawn.HealthMax,20,20,200,80,80);         
