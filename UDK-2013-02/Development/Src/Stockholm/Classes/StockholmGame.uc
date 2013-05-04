@@ -7,6 +7,8 @@ var byte neutralTeamNum;
 var byte nobodyTeamNum;
 var byte winner;
 
+var string finalScore;
+
 var bool gameOver;
 
 var int redHostages;
@@ -88,6 +90,7 @@ function byte whoWon(){
 function GameEnd(){
 	local CaptorPawn cp;
 	Local CaptorController cc;
+	finalScore = dispHostageNums();
 		cc = CaptorController(getalocalplayercontroller());
 		cp = CaptorPawn(cc.Pawn);
 		cc.GoToState('BaseSpectating');
@@ -231,7 +234,9 @@ function enterBase(byte team_number){
 		blueBaseHostages += 1;
 	}
 	if(whoWon() != nobodyTeamNum){
-		GameEnd();
+		if(!gameOver){
+			GameEnd();
+		}
 	}
 }
 

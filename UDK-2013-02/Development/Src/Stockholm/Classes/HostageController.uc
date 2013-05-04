@@ -1138,7 +1138,7 @@ State GoingHome{
 
   ContinuingToGoHome:
  
-      if(distToActor(dest) < 750){
+      if(distToActor(dest) < 550){
         runTo(dest.Location);
         UTPawn(Pawn).doJump(true);
         sleep(0.3);

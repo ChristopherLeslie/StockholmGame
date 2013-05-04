@@ -17,16 +17,19 @@ function DrawGameHud()
             Canvas.SetPos(200,200);
             Canvas.SetDrawColor(255,255,255,255);
             Canvas.Font = class'Engine'.static.GetLargeFont();
-            Canvas.DrawText("YOUVE WON "$game.dispHostageNums());
+            Canvas.DrawText("YOUVE WON "$game.finalScore);
         }
         else if(game.winner == game.redTeamNum){
             Canvas.SetPos(200,200);
             Canvas.SetDrawColor(255,255,255,255);
             Canvas.Font = class'Engine'.static.GetLargeFont();
-            Canvas.DrawText("YOUVE LOST "$game.dispHostageNums());
+            Canvas.DrawText("YOUVE LOST "$game.finalScore);
         }
         else if(game.winner == game.nobodyTeamNum){
-            //TIE
+             Canvas.SetPos(200,200);
+            Canvas.SetDrawColor(255,255,255,255);
+            Canvas.Font = class'Engine'.static.GetLargeFont();
+            Canvas.DrawText("ITS A TIE! "$game.finalScore);
         }
     }
     else{
