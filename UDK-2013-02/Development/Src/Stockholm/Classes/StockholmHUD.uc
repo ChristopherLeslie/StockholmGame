@@ -13,12 +13,13 @@ function DrawGameHud()
 	Canvas.SetDrawColor(255,255,255,255);
     Canvas.Font = class'Engine'.static.GetMediumFont();
 	Canvas.DrawText(game.currentTime());
-	
+
 	if ( !PlayerOwner.IsDead() && !UTPlayerOwner.IsInState('Spectating'))
 	{
 		DrawBar("Health",PlayerOwner.Pawn.Health, PlayerOwner.Pawn.HealthMax,20,20,200,80,80);         
-		DrawBar("Ammo",UTWeapon(PawnOwner.Weapon).AmmoCount, UTWeapon(PawnOwner.Weapon).MaxAmmoCount ,20,40,80,80,200);     }
+		DrawBar("Ammo",UTWeapon(PawnOwner.Weapon).AmmoCount, UTWeapon(PawnOwner.Weapon).MaxAmmoCount ,20,40,80,80,200);  
 	}
+}
 
 function DrawBar(String Title, float Value, float MaxValue,int X, int Y, int R, int G, int B)
 {
