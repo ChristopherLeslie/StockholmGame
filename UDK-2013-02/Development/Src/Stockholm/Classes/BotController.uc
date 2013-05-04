@@ -98,7 +98,7 @@ auto State idle{
 
 State Sit{
 	Begin:
- 
+		stopMoving();
 		sleep(3);
 		if(game.capturableHostagesForTeam( shTeamNum() ) > 0){
 			GoToState('LookForHostages');
