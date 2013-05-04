@@ -45,7 +45,15 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 function bool capturable(HostagePawn hostageP){
 	//alive and different teams
-	return (hostageP.Health > 0 && !StockholmPawn(Pawn).sameTeam(hostageP));
+	return (
+		hostageP.Health > 0 
+		&& !StockholmPawn(Pawn).sameTeam(hostageP) 
+		&& !hostageP.isInState('Warding') 
+		&& !hostageP.isInState('RemoteMineWandering')
+		&& !hostageP.isInState('RemoteMineAttacking')
+		&& !hostageP.isInState('BlowUpAndDie')
+		&& !hostageP.isInState('Sentry')
+	);
 }
 function bool captured(HostagePawn hostageP){
 	// alive and same teams
@@ -98,7 +106,7 @@ auto State idle{
 
 State Sit{
 	Begin:
- 
+		stopMoving();
 		sleep(3);
 		if(game.capturableHostagesForTeam( shTeamNum() ) > 0){
 			GoToState('LookForHostages');
@@ -133,11 +141,12 @@ State LookForHostages{
 }
 
 State ApproachTargetHostage{
-	
+	local int times_pursued;
+
 
 	Begin:
 		Pawn.GroundSpeed = 400;
- 
+ 		times_pursued = 0;
 		GoTo('ContinueApproaching');
 
 	ContinueApproaching:
@@ -153,7 +162,12 @@ State ApproachTargetHostage{
 		wayPoint = simplePathFindToActorOrRandom(hostageTarget);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
-		sleep(0.7);
+		
+		times_pursued++;
+		if(times_pursued % 4 == 0){
+			hostageTarget = closestHostage();
+		}
+		sleep(0.3);
 
 	GoTo('ContinueApproaching');
 
@@ -198,7 +212,7 @@ State Capturing{
 		wayPoint = simplePathFindToActorOrRandom(target);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
-		sleep(0.7);
+		sleep(0.3);
 
 		if(distToActor(target) > close_enough_to_capture || !canSeeByPoints(Pawn.Location,target.Location,Pawn.Rotation)){
 			Pawn.StopFire(1);
@@ -246,7 +260,7 @@ State Capturing{
 
 
 function debug(String s){
-  WorldInfo.Game.Broadcast(self,s);
+ // WorldInfo.Game.Broadcast(self,s);
 }
 
 function byte shTeamNum(){

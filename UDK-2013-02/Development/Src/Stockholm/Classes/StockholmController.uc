@@ -207,8 +207,15 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
     
     
     debug(Pawn$": failure case 2");
-
-    return findRandomDest().Location;
+    if(!NavigationHandle.PointReachable(findRandomDest().Location)){
+      debug(Pawn$": off the grid!");
+       return Pawn.Location + VRand()*100;//findRandomDest().Location;
+    }
+    else{
+      debug(Pawn$": turning til he can run");
+      return turn_until_you_can_run();
+    }
+   
     
    
 }
@@ -308,7 +315,7 @@ function bool teleportToActorSafely(Actor teleport_target){
 
 function debug(String s){
   
-	WorldInfo.Game.Broadcast(self,s);
+	//WorldInfo.Game.Broadcast(self,s);
 }
 
 

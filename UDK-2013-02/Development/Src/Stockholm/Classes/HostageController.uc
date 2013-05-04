@@ -284,6 +284,7 @@ State Roaming{
   
 
   Begin:
+	Pawn.StopFire(0);
     Pawn.GroundSpeed = 100;
     percentOfTimeSpentJustLooking = 40;
     maxWaitTime = 2;
@@ -454,6 +455,7 @@ local float stopDistance;
 
 
   Begin:
+	Pawn.StopFire(0);
     followDistance = 250;
     stopDistance = 250;
 
@@ -1123,7 +1125,7 @@ State GoingHome{
     local PathNode dest;
     local Vector turn_dest;
   Begin:
-    
+    Pawn.StopFire(0);
     dest = homeZone;
     GoTo('ContinuingToGoHome');
 
@@ -1216,7 +1218,7 @@ function myGetUp(){
 }
 
 function debug(String s){
-  WorldInfo.Game.Broadcast(self,s);
+  //WorldInfo.Game.Broadcast(self,s);
 }
 
 

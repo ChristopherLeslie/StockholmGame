@@ -40,7 +40,10 @@ event PostBeginPlay()
 	Super.PostBeginPlay();
 	WorldInfo.Game.Broadcast(self,"we are playing a game of STOCKHOLM");
 	`log("We are playing a game of STOCKHOLM");
-	privatecurrentTime = 90;
+	privatecurrentTime = 15;
+}
+
+function myGameStart(){
 	setTimer(1,true,'timePasses');
 }
 
@@ -51,7 +54,7 @@ function int currentTime(){
 
 function timePasses(){
 	privatecurrentTime--;
-	if(privateCurrentTime <= 0){
+	if(privateCurrentTime <= 0 && !gameOver){
 		GameEnd();
 	}
 }
@@ -81,20 +84,83 @@ function byte whoWon(){
 }
 
 function GameEnd(){
-	if(!gameOver){
-		if(whosWinning() == blueTeamNum){
-			BlueTeamWin();
-			return;
-		}
-		if(whosWinning() == redTeamNum){
-			RedTeamWin();
-			return;
-		}
+	local CaptorPawn cp;
+	Local CaptorController cc;
+		cc = CaptorController(getalocalplayercontroller());
+		cp = CaptorPawn(cc.Pawn);
+		cc.GoToState('BaseSpectating');
 
-		NobodyWin();
+		cc.SetBehindView(true);
+        cp.SetMeshVisibility(cc.bBehindView);
+		
+
+
+	setTimer(6,false,'restartTheWholeShabang');
+	setTimer(3, false, 'explodeEveryone');
+	
+	if(whosWinning() == blueTeamNum){
+		BlueTeamWin();
+		return;
+	}
+	if(whosWinning() == redTeamNum){
+		RedTeamWin();
+		return;
+	}
+	
+	NobodyWin();
+
+}
+function restartTheWholeShabang(){
+	Broadcast(self,"restart");
+
+	//ConsoleCommand("RestartLevel");
+	ConsoleCommand("Servertravel?Restart");
+}
+function explodeEveryone(){
+
+	local Pawn poorSoul;
+	local bool youDie;
+	local bool ragdoll;
+		Broadcast(self,"explode");
+
+
+	youDie = false;
+	ragdoll = false;
+
+	if(winner == redTeamNum){
+		youDie = true;
+	}
+	if(winner == nobodyTeamNum){
+		ragdoll = true;
 	}
 
+	if(ragdoll){
+		foreach WorldInfo.AllPawns(class'Pawn', poorSoul){
+			
+				poorSoul.Gasp();
+				UTPawn(poorSoul).forceRagdoll();
+			
 
+	    }
+	}
+	else{
+		foreach WorldInfo.AllPawns(class'Pawn', poorSoul){
+			if(poorSoul.Controller.isA('PlayerController')){
+				if(youDie){
+					poorSoul.gibbedBy(poorSoul);
+				}
+				else{
+					UTPawn(poorSoul).setBigHead();
+					UTPawn(poorSoul).PlayVictoryAnimation();
+				}
+			}
+			else{
+				poorSoul.Gasp();
+				poorSoul.gibbedBy(GetALocalPlayerController());
+			}
+
+	    }
+    }
 }
 
 function BlueTeamWin(){
@@ -105,7 +171,6 @@ function BlueTeamWin(){
 function RedTeamWin(){
 	setwinner(redTeamNum);
 	gameOver = true;
-	//youve lost
 }
 function NobodyWin(){
 	setwinner(nobodyTeamNum);

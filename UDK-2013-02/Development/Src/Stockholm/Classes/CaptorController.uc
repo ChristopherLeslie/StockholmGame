@@ -21,7 +21,7 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	local int i;
 
 	Super.Possess(inPawn, bVehicleTransition);
-	
+		StockholmGame(WorldInfo.Game).myGameStart();
 	//Set the pawn that CaptorController is controlling to look like a human
 	inPawn.Mesh.SetSkeletalMesh(SkeletalMesh'CH_IronGuard_Male.Mesh.SK_CH_IronGuard_MaleA');
 
@@ -42,6 +42,11 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 	
 }
 
+
+function stopMoving(){
+  Pawn.ZeroMovementVariables();
+  Pawn.GroundSpeed = 0;
+}
 
 function bool captured(HostagePawn hostageP){
 	// alive and same teams
