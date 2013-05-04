@@ -51,9 +51,12 @@ simulated event PostBeginPlay()
   i = 0;
   foreach WorldInfo.AllActors(class'Pathnode',Current)
   {
-	Waypoints.AddItem( Current );
-	WaypointOrder.AddItem(i);
-	i = i + 1;
+    if((Current.tag != 'redPen')&&(Current.tag != 'bluePen'))
+	{
+		Waypoints.AddItem( Current );
+		WaypointOrder.AddItem(i);
+		i = i + 1;
+	}
   }
   ShuffleWaypointOrder();
 
