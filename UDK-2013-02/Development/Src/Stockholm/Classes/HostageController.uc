@@ -51,9 +51,12 @@ simulated event PostBeginPlay()
   i = 0;
   foreach WorldInfo.AllActors(class'Pathnode',Current)
   {
-	Waypoints.AddItem( Current );
-	WaypointOrder.AddItem(i);
-	i = i + 1;
+    if((Current.tag != 'redPen')&&(Current.tag != 'bluePen'))
+	{
+		Waypoints.AddItem( Current );
+		WaypointOrder.AddItem(i);
+		i = i + 1;
+	}
   }
   ShuffleWaypointOrder();
 
@@ -177,8 +180,12 @@ function GoHome(){
     homeZone = StockholmGame(WorldInfo.Game).redTeamBase();
   } 
 
-
-  GoToState('GoingHome');
+  if(isInState('BlowUpAndDie')||isInState('RemoteMineAttacking')||isInState('RemoteMineWandering')||isInState('Sentry')||isInState('Warding'))
+	  `log("Items won't go home");
+  else
+  {
+    GoToState('GoingHome');
+  }
 }
 
 function followCaptor(){
@@ -191,7 +198,12 @@ function followCaptor(){
     }
   }
   else{
+	if(isInState('BlowUpAndDie')||isInState('RemoteMineAttacking')||isInState('RemoteMineWandering')||isInState('Sentry')||isInState('Warding'))
+	  `log("Items won't follow captor");
+	else
+	{
       GoToState('Following');
+	}
   }
 }
 
@@ -886,7 +898,7 @@ State Sentry
 			//`log("Looking for a target");
 			successiveMisses = 0;
 			currentPrioritizedTargetToFireAt = none;
-			Pawn.StopFire(1);
+			Pawn.StopFire(0);
 			Pawn.LockDesiredRotation(false,false);
 			Pawn.SetDesiredRotation(currentRotation,true,true,0.25);
 			currentRotation.pitch = currentRotation.pitch + (32677/9); 
@@ -960,7 +972,7 @@ State Sentry
 				Pawn.LockDesiredRotation(false,false);
 				Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAt.Location - Pawn.Location),true,true,0.25);
 				distance = VSize2D(currentPrioritizedTargetToFireAt.Location - Pawn.Location);
-				Pawn.StartFire(1);
+				Pawn.StartFire(0);
 				if(distance > SentryDistanceToTargetStop)
 				{
 					currentPrioritizedTargetToFireAt = none;
