@@ -19,8 +19,7 @@ simulated event PostBeginPlay()
   `log("hello, I'm a bot");
 
    Super.PostBeginPlay();
-   StockholmGame(WorldInfo.Game).neutralHostages+=1;
-   StockholmGame(WorldInfo.Game).totalHostages+=1;
+   StockholmGame(WorldInfo.Game).addHostage();
 }
 
 
