@@ -92,7 +92,7 @@ function GameEnd(){
 	}
 
 	NobodyWin();
-	reset();
+	ConsoleCommand("open DM-Stockholm_37.udk");
 
 }
 
