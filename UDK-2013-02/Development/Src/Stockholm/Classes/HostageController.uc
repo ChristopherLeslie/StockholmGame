@@ -211,7 +211,9 @@ function followCaptor(){
 }
 
 
-
+function bool isItem(){
+  return (IsInState('BlowUpAndDie') || IsInState('RemoteMineAttacking')||isInState('RemoteMineWandering')||isInState('Sentry')||isInState('Warding'));
+}
 
 
 
@@ -1159,20 +1161,9 @@ State AtHome{
 
 
   event EndState(name nextStateName){
-        WorldInfo.Game.Broadcast(self,string(nextStateName));
-
         game.leaveBase(shTeamNum());
         success = teleportToActorSafely(game.baseByTeam(shTeamNum()));
 
-  }
-
-  event Landed (Vector hitNormal, Actor FloorActor){
-    myFeign();
-    super.Landed(hitNormal,FloorActor);
-  }
-  event Falling(){
-    super.Falling();
-    myFeign();
   }
 
 
@@ -1182,14 +1173,14 @@ State AtHome{
   AttemptToTeleport:
       teleport_actor = game.penByteam(shTeamNum());
       
-      drawdebugsphere(teleport_actor.location,24,10,255,255,255);
+      //drawdebugsphere(teleport_actor.location,24,10,255,255,255);
       success = teleportToActorSafely(teleport_actor);
     if(success){
         game.enterBase(StockholmPawn(Pawn).shTeamNum());
         GoTo('Lounge');
     }
     else{
-      debug("FAILED TO FIND A PLACE TO TELEPORT TO");
+     // debug("FAILED TO FIND A PLACE TO TELEPORT TO");
       sleep(0.5);
       GoTo('AttemptToTeleport');
     }

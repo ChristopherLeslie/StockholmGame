@@ -165,7 +165,7 @@ exec function SendHostageHome(){
 	local string curstate;
 	foreach WorldInfo.AllPawns(class'HostagePawn', hostageP){
 			curState = string(HostageController(hostageP.Controller).getStateName());
-			shouldntGoHome = curstate ~= "AtHome" || curstate ~= "GoingHome";
+			shouldntGoHome = curstate ~= "AtHome" || curstate ~= "GoingHome" || HostageController(hostageP.Controller).isItem();
 			if(captured(hostageP) && !shouldntGoHome){
 				HostageController(hostageP.Controller).GoHome();
 				return;

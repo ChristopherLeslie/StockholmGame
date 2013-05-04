@@ -42,7 +42,7 @@ event PostBeginPlay()
 	Super.PostBeginPlay();
 	WorldInfo.Game.Broadcast(self,"we are playing a game of STOCKHOLM");
 	`log("We are playing a game of STOCKHOLM");
-	privatecurrentTime = 120;
+	privatecurrentTime = 240;
 }
 
 function myGameStart(){
@@ -91,6 +91,8 @@ function GameEnd(){
 		cc = CaptorController(getalocalplayercontroller());
 		cp = CaptorPawn(cc.Pawn);
 		cc.GoToState('BaseSpectating');
+		cp.Groundspeed = 0;
+		cp.Velocity = VRAND()*0;
 
 		cc.SetBehindView(true);
         cp.SetMeshVisibility(cc.bBehindView);
