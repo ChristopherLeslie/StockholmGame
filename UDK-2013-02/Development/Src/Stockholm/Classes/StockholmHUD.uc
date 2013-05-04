@@ -30,9 +30,9 @@ function DrawGameHud()
     else{
     	super.DrawGameHud();
 		
-		NumberOfWardItems = PlayerOwner.Pawn.WardPickups
-		NumberOfSentryItems = PlayerOwner.Pawn.SentryPickups
-		NumberOfMineItems = PlayerOwner.Pawn.MinePickups
+		NumberOfWardItems = CaptorPawn(PlayerOwner.Pawn).WardPickups;
+		NumberOfSentryItems = CaptorPawn(PlayerOwner.Pawn).SentryPickups;
+		NumberOfMineItems = CaptorPawn(PlayerOwner.Pawn).MinePickups;
 
     	Canvas.SetPos(600,100);
     	
