@@ -41,6 +41,28 @@ function runTo(Vector destination){
     SetDestinationPosition(destination);
     bPreciseDestination = True;
 }
+function stopMoving(){
+  Pawn.ZeroMovementVariables();
+  setDestinationPosition(Location);
+  bPreciseDestination = false;
+}
+
+function LookAt(Actor a){
+
+local Rotator final_rot;
+        final_rot = Rotator(a.Location-Pawn.Location);
+        Pawn.LockDesiredRotation(false,false);
+        Pawn.SetDesiredRotation(final_rot,true);
+}
+
+function LookAtVector(Vector locationVec){
+
+local Rotator final_rot;
+        final_rot = Rotator(locationVec-Pawn.Location);
+        Pawn.LockDesiredRotation(false,false);
+        Pawn.SetDesiredRotation(final_rot,true);
+}
+
 
 
 
@@ -173,6 +195,7 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
         else{
           `log(Pawn$" failure to do any path planning to get to "$dest);
  
+          debug("failure case 1");
           return findRandomDest().Location;
         
         }
@@ -183,9 +206,16 @@ function Vector simplePathFindToPointOrRandom(Vector dest){
     
     
     
-    //debug("failure case 2");
-
-    return findRandomDest().Location;
+    debug(Pawn$": failure case 2");
+    if(!NavigationHandle.PointReachable(findRandomDest().Location)){
+      debug(Pawn$": off the grid!");
+       return Pawn.Location + VRand()*100;//findRandomDest().Location;
+    }
+    else{
+      debug(Pawn$": turning til he can run");
+      return turn_until_you_can_run();
+    }
+   
     
    
 }
@@ -244,25 +274,36 @@ function byte shTeamNum(){
   return StockholmPawn(Pawn).shTeamNum();
 }
 
-
-
+function bool canTeleportToLocationSafely(Vector teleport_location){
+  local Pawn Neighbor;
+  local float collisionRadius;
+  collisionRadius = VSize(Pawn.getCollisionExtent());
+  
+   forEach VisibleCollidingActors(class'Pawn', Neighbor,collisionRadius,teleport_location,false,0*VRand(),true)
+  {
+  return false;
+  }
+  return true;
+}
 
 function bool teleportToActorSafely(Actor teleport_target){
   local vector offset;
   local Pawn Neighbor;
   local bool retVal;
+  local vector teleport_vector;
+  local float oldRad;
+  local float oldHeight;
 
-  forEach CollidingActors(class'Pawn', Neighbor, 32, teleport_target.Location)
-  {
-  debug("Found a colliding pawn:"@Neighbor);
-  break;
+  if(!canTeleportToLocationSafely(teleport_target.Location)){
+    return false;
   }
 
   retVal = teleport_target.findSpot(Pawn.getCollisionExtent(),offset);
-  drawDebugSphere(teleport_target.Location+offset,16,10,255,255,255);
+  teleport_vector = teleport_target.Location+offset;
 
   if(retVal){
-    Pawn.setLocation(teleport_target.Location+offset);
+    Pawn.setLocation(teleport_vector);
+    stopMoving();
   }
   else{
     debug("trouble teleporting safely");
@@ -272,14 +313,9 @@ function bool teleportToActorSafely(Actor teleport_target){
 
 
 
-
-
-
-
-
 function debug(String s){
   
-	WorldInfo.Game.Broadcast(self,s);
+	//WorldInfo.Game.Broadcast(self,s);
 }
 
 

@@ -19,9 +19,6 @@ simulated event PostBeginPlay()
 event Tick(float DeltaTime)
 {
   
-  //calculate elapsed time
-
-  aim();
 }
 
 simulated event Possess(Pawn inPawn, bool bVehicleTransition)
@@ -48,7 +45,15 @@ simulated event Possess(Pawn inPawn, bool bVehicleTransition)
 
 function bool capturable(HostagePawn hostageP){
 	//alive and different teams
-	return (hostageP.Health > 0 && !StockholmPawn(Pawn).sameTeam(hostageP));
+	return (
+		hostageP.Health > 0 
+		&& !StockholmPawn(Pawn).sameTeam(hostageP) 
+		&& !hostageP.isInState('Warding') 
+		&& !hostageP.isInState('RemoteMineWandering')
+		&& !hostageP.isInState('RemoteMineAttacking')
+		&& !hostageP.isInState('BlowUpAndDie')
+		&& !hostageP.isInState('Sentry')
+	);
 }
 function bool captured(HostagePawn hostageP){
 	// alive and same teams
@@ -81,37 +86,10 @@ function HostagePawn closestHostage(){
     return closestHostage;
 }
 
-function LookAt(Actor a){
-	lookAtVector(a.Location); 
-}
-function aim(){
-	local Rotator final_rot;
-    final_rot = Rotator(vect(0,0,1)); //Look straight up
-    Pawn.SetViewRotation(final_rot);
-}
-function shootAt(Pawn p){
-	SetFocalPoint(p.Location);
-	Focus = p;
-	FireWeaponAt(p);
-}
-function LookAtPawn(Pawn p){
-	local Vector out_Location;
-	local Rotator out_Rotation;
-	p.Controller.GetActorEyesViewPoint(out_Location, out_Rotation);
- 
-	lookAtVector(out_Location);
-}
 
-function LookAtVector(Vector locationVec){
-	local Rotator final_rot;
-    final_rot = Rotator(locationVec-Pawn.Location);
-    Pawn.LockDesiredRotation(false,false);
-    Pawn.SetDesiredRotation(final_rot,true,false,0.1);
-}
-function runInDirectionOf(Vector destination){
-  SetDestinationPosition(destination);
-  bPreciseDestination = True;
-}
+
+
+
 function stopMoving(){
   Pawn.ZeroMovementVariables();
   setDestinationPosition(Location);
@@ -119,75 +97,43 @@ function stopMoving(){
 }
 
 
-
-
-
-
-
-
-
-
- simulated event GetPlayerViewPoint(out vector out_Location, out Rotator out_Rotation){
-    // AI does things from the Pawn
-    if (Pawn != None)
-    {
-        out_Location = Pawn.Location;
-        out_Rotation = Rotation; //That's what we've changed
-    }
-    else
-    {
-        Super.GetPlayerViewPoint(out_Location, out_Rotation);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 auto State idle{
-	local Rotator newRot;
-	local Vector endpoint;
 	Begin:
 		GoToState('LookForHostages');
 }
+
+
+
 State Sit{
 	Begin:
- 
+		stopMoving();
 		sleep(3);
-		if(!StockholmGame(WorldInfo.Game).teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
+		if(game.capturableHostagesForTeam( shTeamNum() ) > 0){
 			GoToState('LookForHostages');
 		}
 
 		GoTo('Begin');
 }
+
+
+
 State LookForHostages{
 
 	Begin:
  
 		
-		if(game.teamByNumHasAllHostages(StockholmPawn(Pawn).shTeamNum())){
+		if(game.capturableHostagesForTeam( shTeamNum() ) < 1){
+			debug("No more hostages left");
 			GoToState('Sit');
 		}
+
 		//There is at least one hostage of the kind that I want
 		
 		hostageTarget = closestHostage();
 
 		if(hostageTarget == none){
 			Sleep(1);
+			debug("couldn't find hostage");
 			GoTo('Begin');
 		}
 
@@ -195,11 +141,12 @@ State LookForHostages{
 }
 
 State ApproachTargetHostage{
-	
+	local int times_pursued;
+
 
 	Begin:
 		Pawn.GroundSpeed = 400;
- 
+ 		times_pursued = 0;
 		GoTo('ContinueApproaching');
 
 	ContinueApproaching:
@@ -207,11 +154,20 @@ State ApproachTargetHostage{
 	    if(distToActor(hostageTarget) < close_enough_to_capture){
 	    	GoToState('Capturing');
 	    }
+
+	    if(captured(hostageTarget) || hostageTarget.Health < 1){
+			GoToState('LookForHostages');
+		}
  
 		wayPoint = simplePathFindToActorOrRandom(hostageTarget);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
-		sleep(0.7);
+		
+		times_pursued++;
+		if(times_pursued % 4 == 0){
+			hostageTarget = closestHostage();
+		}
+		sleep(0.3);
 
 	GoTo('ContinueApproaching');
 
@@ -256,7 +212,7 @@ State Capturing{
 		wayPoint = simplePathFindToActorOrRandom(target);
 		runInDirectionOf(wayPoint);
 		lookAtVector(wayPoint);
-		sleep(0.7);
+		sleep(0.3);
 
 		if(distToActor(target) > close_enough_to_capture || !canSeeByPoints(Pawn.Location,target.Location,Pawn.Rotation)){
 			Pawn.StopFire(1);
@@ -304,9 +260,12 @@ State Capturing{
 
 
 function debug(String s){
-  //WorldInfo.Game.Broadcast(self,s);
+ // WorldInfo.Game.Broadcast(self,s);
 }
 
+function byte shTeamNum(){
+	return StockholmPawn(Pawn).shTeamNum();
+}
 
 
 

@@ -51,9 +51,12 @@ simulated event PostBeginPlay()
   i = 0;
   foreach WorldInfo.AllActors(class'Pathnode',Current)
   {
-	Waypoints.AddItem( Current );
-	WaypointOrder.AddItem(i);
-	i = i + 1;
+    if((Current.tag != 'redPen')&&(Current.tag != 'bluePen'))
+	{
+		Waypoints.AddItem( Current );
+		WaypointOrder.AddItem(i);
+		i = i + 1;
+	}
   }
   ShuffleWaypointOrder();
 
@@ -122,11 +125,7 @@ local Rotator final_rot;
         Pawn.SetDesiredRotation(final_rot,true);
 }
 
-function stopMoving(){
-  Pawn.ZeroMovementVariables();
-  setDestinationPosition(Location);
-  bPreciseDestination = false;
-}
+
 
 
 function reactToSeeingAPlayer(Pawn seen){
@@ -181,12 +180,31 @@ function GoHome(){
     homeZone = StockholmGame(WorldInfo.Game).redTeamBase();
   } 
 
-
-  GoToState('GoingHome');
+  if(isInState('BlowUpAndDie')||isInState('RemoteMineAttacking')||isInState('RemoteMineWandering')||isInState('Sentry')||isInState('Warding'))
+	  `log("Items won't go home");
+  else
+  {
+    GoToState('GoingHome');
+  }
 }
 
 function followCaptor(){
-  GoToState('Following');
+  if(isInState('AtHome')){
+    if(canTeleportToLocationSafely(game.BaseByTeam(shTeamNum()).Location)){
+      GoToState('Following');
+    }
+    else{
+      debug("try again in a second");
+    }
+  }
+  else{
+	if(isInState('BlowUpAndDie')||isInState('RemoteMineAttacking')||isInState('RemoteMineWandering')||isInState('Sentry')||isInState('Warding'))
+	  `log("Items won't follow captor");
+	else
+	{
+      GoToState('Following');
+	}
+  }
 }
 
 
@@ -266,6 +284,7 @@ State Roaming{
   
 
   Begin:
+	Pawn.StopFire(0);
     Pawn.GroundSpeed = 100;
     percentOfTimeSpentJustLooking = 40;
     maxWaitTime = 2;
@@ -436,6 +455,7 @@ local float stopDistance;
 
 
   Begin:
+	Pawn.StopFire(0);
     followDistance = 250;
     stopDistance = 250;
 
@@ -880,7 +900,7 @@ State Sentry
 			//`log("Looking for a target");
 			successiveMisses = 0;
 			currentPrioritizedTargetToFireAt = none;
-			Pawn.StopFire(1);
+			Pawn.StopFire(0);
 			Pawn.LockDesiredRotation(false,false);
 			Pawn.SetDesiredRotation(currentRotation,true,true,0.25);
 			currentRotation.pitch = currentRotation.pitch + (32677/9); 
@@ -954,7 +974,7 @@ State Sentry
 				Pawn.LockDesiredRotation(false,false);
 				Pawn.SetDesiredRotation(rotator(currentPrioritizedTargetToFireAt.Location - Pawn.Location),true,true,0.25);
 				distance = VSize2D(currentPrioritizedTargetToFireAt.Location - Pawn.Location);
-				Pawn.StartFire(1);
+				Pawn.StartFire(0);
 				if(distance > SentryDistanceToTargetStop)
 				{
 					currentPrioritizedTargetToFireAt = none;
@@ -1105,7 +1125,7 @@ State GoingHome{
     local PathNode dest;
     local Vector turn_dest;
   Begin:
-    
+    Pawn.StopFire(0);
     dest = homeZone;
     GoTo('ContinuingToGoHome');
 
@@ -1129,49 +1149,76 @@ State GoingHome{
 
 State AtHome{
   local Vector teleport_offset;
-  local Vector teleport_dest;
+  local actor teleport_actor;
   local PathNode my_pen;
   local Vector pawn_size;
   local bool success;
+
 
   event EndState(name nextStateName){
         WorldInfo.Game.Broadcast(self,string(nextStateName));
 
         game.leaveBase(shTeamNum());
         success = teleportToActorSafely(game.baseByTeam(shTeamNum()));
-         if(!success){
-            debug("FAILED TO FIND A PLACE TO TELEPORT TO");
-         }
-        GoToState(nextStateName);
-    
 
   }
-  event BeginState(name previousStateName){
 
-    pawn_size.x = Pawn.getCollisionRadius();
-    pawn_size.y = pawn_size.x;
-    pawn_size.z = Pawn.getCollisionHeight();
-
-
-    game.enterBase(StockholmPawn(Pawn).shTeamNum());
-    success = teleportToActorSafely(game.penByTeam(shTeamNum()));
-    if(!success){
-      debug("FAILED TO FIND A PLACE TO TELEPORT TO");
-    }
+  event Landed (Vector hitNormal, Actor FloorActor){
+    myFeign();
+    super.Landed(hitNormal,FloorActor);
   }
+  event Falling(){
+    super.Falling();
+    myFeign();
+  }
+
 
   Begin:
+    GoTo('AttemptToTeleport');
+
+  AttemptToTeleport:
+      teleport_actor = game.penByteam(shTeamNum());
+      
+      drawdebugsphere(teleport_actor.location,24,10,255,255,255);
+      success = teleportToActorSafely(teleport_actor);
+    if(success){
+        game.enterBase(StockholmPawn(Pawn).shTeamNum());
+        GoTo('Lounge');
+    }
+    else{
+      debug("FAILED TO FIND A PLACE TO TELEPORT TO");
+      sleep(0.5);
+      GoTo('AttemptToTeleport');
+    }
  
-    GoTo('Lounge');
+
   Lounge:
+
+
 
     
     
 }
-
+function myFeign(){
+  if(StockholmPawn(Pawn).bFeigningDeath){
+    return;
+  }
+  else{
+    //StockholmPawn(Pawn).playFeignDeath();
+    StockholmPawn(Pawn).forceRagdoll();
+  }
+}
+function myGetUp(){
+  if(StockholmPawn(Pawn).bFeigningDeath){
+    StockholmPawn(Pawn).playFeignDeath();
+  }
+  else{
+    return;
+  }
+}
 
 function debug(String s){
-  WorldInfo.Game.Broadcast(self,s);
+  //WorldInfo.Game.Broadcast(self,s);
 }
 
 

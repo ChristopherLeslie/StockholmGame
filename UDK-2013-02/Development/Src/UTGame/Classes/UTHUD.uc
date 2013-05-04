@@ -2459,7 +2459,7 @@ defaultproperties
 	bHasMap=false
 	bShowFragCount=true
 
-	WeaponBarScale=0.75
+	WeaponBarScale=2.75
 	WeaponBarY=16
 	SelectedWeaponScale=1.5
 	BounceWeaponScale=2.25

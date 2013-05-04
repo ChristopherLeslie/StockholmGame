@@ -19,8 +19,7 @@ simulated event PostBeginPlay()
   `log("hello, I'm a bot");
 
    Super.PostBeginPlay();
-   StockholmGame(WorldInfo.Game).neutralHostages+=1;
-   StockholmGame(WorldInfo.Game).totalHostages+=1;
+   StockholmGame(WorldInfo.Game).addHostage();
 }
 
 
@@ -49,7 +48,25 @@ event Tick(float DeltaTime)
 
 simulated function receivePersuasion(CaptorPawn captor){
   if(Health > 0){
+
     increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+    increaseLoyalty(captor.shTeamNum());
+
+
     if(captor.shTeamNum() != shTeamNum() && !HostageController(Controller).isInState('Fleeing')){
       HostageController(Controller).GoToState('Fleeing');
     }
