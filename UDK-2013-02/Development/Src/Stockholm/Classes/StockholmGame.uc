@@ -40,7 +40,10 @@ event PostBeginPlay()
 	Super.PostBeginPlay();
 	WorldInfo.Game.Broadcast(self,"we are playing a game of STOCKHOLM");
 	`log("We are playing a game of STOCKHOLM");
-	privatecurrentTime = 10;
+	privatecurrentTime = 15;
+}
+
+function myGameStart(){
 	setTimer(1,true,'timePasses');
 }
 
@@ -51,7 +54,7 @@ function int currentTime(){
 
 function timePasses(){
 	privatecurrentTime--;
-	if(privateCurrentTime <= 0){
+	if(privateCurrentTime <= 0 && !gameOver){
 		GameEnd();
 	}
 }
@@ -81,8 +84,20 @@ function byte whoWon(){
 }
 
 function GameEnd(){
-	setTimer(3.5,false,'restartTheWholeShabang');
+	local CaptorPawn cp;
+	Local CaptorController cc;
+		cc = CaptorController(getalocalplayercontroller());
+		cp = CaptorPawn(cc.Pawn);
+		cc.GoToState('BaseSpectating');
+
+		cc.SetBehindView(true);
+        cp.SetMeshVisibility(cc.bBehindView);
+		
+
+
+	setTimer(6,false,'restartTheWholeShabang');
 	setTimer(3, false, 'explodeEveryone');
+
 	if(whosWinning() == blueTeamNum){
 		BlueTeamWin();
 		return;
@@ -93,30 +108,58 @@ function GameEnd(){
 	}
 
 	NobodyWin();
-	ConsoleCommand("Servertravel?Restart");
 
 }
 function restartTheWholeShabang(){
-	ConsoleCommand("RestartLevel");
-	//ConsoleCommand("Servertravel?Restart");
+	Broadcast(self,"restart");
+
+	//ConsoleCommand("RestartLevel");
+	ConsoleCommand("Servertravel?Restart");
 }
 function explodeEveryone(){
-local Pawn poorSoul;
-local bool youDie;
-youDie = false;
-if(winner == redTeamNum){
-	youDie = true;
-}
-	foreach WorldInfo.AllPawns(class'Pawn', poorSoul){
-		if(poorSoul.Controller.isA('PlayerController')){
-			if(youDie){
-				poorSoul.gibbedBy(poorSoul);
-			}
-		}
-		else{
-			poorSoul.gibbedBy(GetALocalPlayerController());
-		}
 
+	local Pawn poorSoul;
+	local bool youDie;
+	local bool ragdoll;
+		Broadcast(self,"explode");
+
+
+	youDie = false;
+	ragdoll = false;
+
+	if(winner == redTeamNum){
+		youDie = true;
+	}
+	if(winner == nobodyTeamNum){
+		ragdoll = true;
+	}
+
+	if(ragdoll){
+		foreach WorldInfo.AllPawns(class'Pawn', poorSoul){
+			
+				poorSoul.Gasp();
+				UTPawn(poorSoul).forceRagdoll();
+			
+
+	    }
+	}
+	else{
+		foreach WorldInfo.AllPawns(class'Pawn', poorSoul){
+			if(poorSoul.Controller.isA('PlayerController')){
+				if(youDie){
+					poorSoul.gibbedBy(poorSoul);
+				}
+				else{
+					UTPawn(poorSoul).setBigHead();
+					UTPawn(poorSoul).PlayVictoryAnimation();
+				}
+			}
+			else{
+				poorSoul.Gasp();
+				poorSoul.gibbedBy(GetALocalPlayerController());
+			}
+
+	    }
     }
 }
 
