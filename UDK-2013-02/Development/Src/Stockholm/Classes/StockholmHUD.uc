@@ -3,6 +3,14 @@ var StockholmGame game;
 
 function DrawGameHud()
 {
+	local int NumberOfWardItems;
+	local int NumberOfSentryItems;
+	local int NumberOfMineItems;
+	NumberOfWardItems = PlayerOwner.Pawn.WardPickups
+	NumberOfSentryItems = PlayerOwner.Pawn.SentryPickups
+	NumberOfMineItems = PlayerOwner.Pawn.MinePickups
+	
+
 	game = StockholmGame(WorldInfo.Game);
 	super.DrawGameHud();
 	Canvas.SetPos(600,100);
@@ -17,8 +25,10 @@ function DrawGameHud()
 	if ( !PlayerOwner.IsDead() && !UTPlayerOwner.IsInState('Spectating'))
 	{
 		DrawBar("Health",PlayerOwner.Pawn.Health, PlayerOwner.Pawn.HealthMax,20,20,200,80,80);         
-		DrawBar("Ammo",UTWeapon(PawnOwner.Weapon).AmmoCount, UTWeapon(PawnOwner.Weapon).MaxAmmoCount ,20,40,80,80,200);     }
+		DrawBar("Ammo",UTWeapon(PawnOwner.Weapon).AmmoCount, UTWeapon(PawnOwner.Weapon).MaxAmmoCount ,20,40,80,80,200);     
 	}
+	
+}
 
 function DrawBar(String Title, float Value, float MaxValue,int X, int Y, int R, int G, int B)
 {
