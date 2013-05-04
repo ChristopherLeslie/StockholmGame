@@ -53,6 +53,7 @@ function bool capturable(HostagePawn hostageP){
 		&& !hostageP.isInState('RemoteMineAttacking')
 		&& !hostageP.isInState('BlowUpAndDie')
 		&& !hostageP.isInState('Sentry')
+		&& FindNavMeshPathToLocation(hostageP.Location)
 	);
 }
 function bool captured(HostagePawn hostageP){
