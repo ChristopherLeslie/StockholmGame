@@ -57,6 +57,8 @@ simulated function receivePersuasion(CaptorPawn captor){
         && !HostageController(Controller).isInState('Fleeing') 
         && !HostageController(Controller).almostHome()
     )
+    {
+      HostageController(Controller).GoToState('Fleeing');
     }
     captorCapturingMe = captor;
     //`log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
