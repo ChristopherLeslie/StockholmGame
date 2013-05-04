@@ -3,7 +3,11 @@ var StockholmGame game;
 
 function DrawGameHud()
 {
-
+	local int NumberOfWardItems;
+	local int NumberOfSentryItems;
+	local int NumberOfMineItems;
+	
+	
 	game = StockholmGame(WorldInfo.Game);
     if(game.gameOver){
         if(game.winner == game.blueTeamNum){
@@ -25,6 +29,10 @@ function DrawGameHud()
     }
     else{
     	super.DrawGameHud();
+		
+		NumberOfWardItems = CaptorPawn(PlayerOwner.Pawn).WardPickups;
+		NumberOfSentryItems = CaptorPawn(PlayerOwner.Pawn).SentryPickups;
+		NumberOfMineItems = CaptorPawn(PlayerOwner.Pawn).MinePickups;
 
     	Canvas.SetPos(600,100);
     	
