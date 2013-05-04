@@ -1216,7 +1216,7 @@ function myGetUp(){
 }
 
 function debug(String s){
-  WorldInfo.Game.Broadcast(self,s);
+  //WorldInfo.Game.Broadcast(self,s);
 }
 
 

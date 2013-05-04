@@ -40,7 +40,7 @@ event PostBeginPlay()
 	Super.PostBeginPlay();
 	WorldInfo.Game.Broadcast(self,"we are playing a game of STOCKHOLM");
 	`log("We are playing a game of STOCKHOLM");
-	privatecurrentTime = 90;
+	privatecurrentTime = 10;
 	setTimer(1,true,'timePasses');
 }
 
@@ -81,7 +81,8 @@ function byte whoWon(){
 }
 
 function GameEnd(){
-
+	setTimer(3.5,false,'restartTheWholeShabang');
+	setTimer(3, false, 'explodeEveryone');
 	if(whosWinning() == blueTeamNum){
 		BlueTeamWin();
 		return;
@@ -92,8 +93,31 @@ function GameEnd(){
 	}
 
 	NobodyWin();
-	ConsoleCommand("open DM-Stockholm_37.udk");
+	ConsoleCommand("Servertravel?Restart");
 
+}
+function restartTheWholeShabang(){
+	ConsoleCommand("RestartLevel");
+	//ConsoleCommand("Servertravel?Restart");
+}
+function explodeEveryone(){
+local Pawn poorSoul;
+local bool youDie;
+youDie = false;
+if(winner == redTeamNum){
+	youDie = true;
+}
+	foreach WorldInfo.AllPawns(class'Pawn', poorSoul){
+		if(poorSoul.Controller.isA('PlayerController')){
+			if(youDie){
+				poorSoul.gibbedBy(poorSoul);
+			}
+		}
+		else{
+			poorSoul.gibbedBy(GetALocalPlayerController());
+		}
+
+    }
 }
 
 function BlueTeamWin(){
@@ -103,6 +127,9 @@ function BlueTeamWin(){
 function RedTeamWin(){
 	setwinner(redTeamNum);
 	gameOver = true;
+
+
+
 }
 function NobodyWin(){
 	setwinner(nobodyTeamNum);
