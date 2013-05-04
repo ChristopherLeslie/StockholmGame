@@ -51,24 +51,12 @@ simulated function receivePersuasion(CaptorPawn captor){
 
     increaseLoyalty(captor.shTeamNum());
     increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
-    increaseLoyalty(captor.shTeamNum());
 
-
-    if(captor.shTeamNum() != shTeamNum() && !HostageController(Controller).isInState('Fleeing')){
-      HostageController(Controller).GoToState('Fleeing');
+    if(
+      captor.shTeamNum() != shTeamNum() 
+        && !HostageController(Controller).isInState('Fleeing') 
+        && !HostageController(Controller).almostHome()
+    )
     }
     captorCapturingMe = captor;
     //`log("My team loyalties- red: "$redLoyalty$".  blue: "$blueLoyalty);
@@ -196,6 +184,7 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 {
   Super.TakeDamage(DamageAmount, EventInstigator,  HitLocation,  Momentum, DamageType, HitInfo, DamageCauser);
   if(damageAmount > 0){
+
 	if(HostageController(Controller).IsInState('Warding'))
 	{
 		`log("Hurt pawn is a ward");
@@ -217,7 +206,11 @@ event TakeDamage(int DamageAmount, Controller EventInstigator, vector HitLocatio
 		  //die();
 		}
 	}
-	else
+	else if(HostageController(Controller).almostHome()) {
+
+  }
+
+  else
 	{
     if(EventInstigator.Pawn.isA('HostagePawn')){
 

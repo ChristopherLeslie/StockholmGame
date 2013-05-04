@@ -288,11 +288,9 @@ function bool canTeleportToLocationSafely(Vector teleport_location){
 
 function bool teleportToActorSafely(Actor teleport_target){
   local vector offset;
-  local Pawn Neighbor;
   local bool retVal;
   local vector teleport_vector;
-  local float oldRad;
-  local float oldHeight;
+
 
   if(!canTeleportToLocationSafely(teleport_target.Location)){
     return false;

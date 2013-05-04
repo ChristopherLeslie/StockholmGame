@@ -125,6 +125,9 @@ local Rotator final_rot;
         Pawn.SetDesiredRotation(final_rot,true);
 }
 
+function bool almostHome(){
+  return isInState('AtHome') || (isInState('GoingHome') && VSize2d(Pawn.Location-homezone.Location) < 1500);
+}
 
 
 
@@ -359,8 +362,8 @@ State Cautious{
 
   
   event HearNoise(float Loudness, Actor NoiseMaker, optional name NoiseType = 'unknown'){
-    local float distance;
-    distance = VSize2d(Pawn.Location - NoiseMaker.Location);  
+    //local float distance;
+    //distance = VSize2d(Pawn.Location - NoiseMaker.Location);  
     
     lookAt(NoiseMaker);
   }
