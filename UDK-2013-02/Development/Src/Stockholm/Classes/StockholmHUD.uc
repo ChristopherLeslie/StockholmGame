@@ -1,6 +1,8 @@
 class StockholmHUD extends UTHUD;
 var StockholmGame game;
 
+
+
 function DrawGameHud()
 {
 	local int NumberOfWardItems;
@@ -29,9 +31,21 @@ function DrawGameHud()
     }
     else{
 		
-		super.DrawGameHud();
+		//super.DrawGameHud();
 		
 		//SCORE
+		
+		Canvas.SetPos(1180,300);
+    	Canvas.DrawTile(Texture2D'Stockholm_Sounds.BlueALPHA',70,70,0,0,512,512);
+    	Canvas.Font = class'Engine'.static.GetMediumFont();
+		Canvas.SetPos(1250,320);
+		Canvas.DrawText(game.blueBaseHostages);
+		
+		Canvas.SetPos(1180,450);
+    	Canvas.DrawTile(Texture2D'Stockholm_Sounds.RedALPHA',80,80,0,0,512,512);
+    	Canvas.Font = class'Engine'.static.GetMediumFont();
+		Canvas.SetPos(1250,470);
+		Canvas.DrawText(game.redBaseHostages);
 		
 		//ITEMS		
 		
@@ -46,6 +60,7 @@ function DrawGameHud()
 		
 		Canvas.SetPos(50,400);
 		Canvas.DrawTile(Texture2D'Stockholm_Sounds.Turret_Alpha',100,100,0,0,512,512);
+		Canvas.Font = class'Engine'.static.GetMediumFont();
 		Canvas.SetPos(50,440);
 		Canvas.DrawText(NumberOfSentryItems);
 		
@@ -55,8 +70,10 @@ function DrawGameHud()
 		Canvas.DrawText(NumberOfWardItems);
 		
 		//TIME
-    	Canvas.SetPos(200,200);
-    	Canvas.SetDrawColor(255,255,255,255);
+		
+    	Canvas.SetPos(600,50);
+    	Canvas.DrawTile(Texture2D'Stockholm_Sounds.Clock',50,50,0,0,512,512);
+		Canvas.SetDrawColor(255,255,255,255);
         Canvas.Font = class'Engine'.static.GetMediumFont();
     	Canvas.DrawText(game.currentTime());
     	
@@ -64,8 +81,8 @@ function DrawGameHud()
 		
     	if ( !PlayerOwner.IsDead() && !UTPlayerOwner.IsInState('Spectating'))
     	{
-    		DrawBar("Health",PlayerOwner.Pawn.Health, PlayerOwner.Pawn.HealthMax,20,20,200,80,80);         
-    		DrawBar("Ammo",UTWeapon(PawnOwner.Weapon).AmmoCount, UTWeapon(PawnOwner.Weapon).MaxAmmoCount ,20,40,80,80,200);    
+    		DrawBar("Health",PlayerOwner.Pawn.Health, PlayerOwner.Pawn.HealthMax,20,670,200,80,80);         
+    		DrawBar("Ammo",UTWeapon(PawnOwner.Weapon).AmmoCount, UTWeapon(PawnOwner.Weapon).MaxAmmoCount ,20,690,80,80,200);    
         }
     }
 
@@ -115,4 +132,7 @@ function DrawBar(String Title, float Value, float MaxValue,int X, int Y, int R, 
 
 defaultproperties
 {
+
+
+
 }

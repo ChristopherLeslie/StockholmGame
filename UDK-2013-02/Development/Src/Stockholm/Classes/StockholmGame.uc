@@ -34,13 +34,15 @@ var bool redTeamPenInitialized;
 
 var int privatecurrentTime;
 
+var SoundCue winVoice;
+var SoundCue loseVoice;
 
 event PostBeginPlay()
 {
 	Super.PostBeginPlay();
 	WorldInfo.Game.Broadcast(self,"we are playing a game of STOCKHOLM");
 	`log("We are playing a game of STOCKHOLM");
-	privatecurrentTime = 15;
+	privatecurrentTime = 120;
 }
 
 function myGameStart(){
@@ -166,11 +168,12 @@ function explodeEveryone(){
 function BlueTeamWin(){
 	setwinner(blueTeamNum);
 	gameOver = true;
-	//youve won
+	PlaySound (winVoice);
 }
 function RedTeamWin(){
 	setwinner(redTeamNum);
 	gameOver = true;
+	PlaySound (loseVoice);
 }
 function NobodyWin(){
 	setwinner(nobodyTeamNum);
@@ -372,6 +375,8 @@ defaultproperties
 	DefaultPawnClass = class'CaptorPawn'
 	PlayerControllerClass = class'CaptorController'
     
+	winVoice = SoundCue'Stockholm_Sounds.AnnouncementWon_Cue';
+	loseVoice = SoundCue'Stockholm_Sounds.AnnouncementLost_Cue';
 
 	redTeamNum = 0
  	blueTeamNum = 1
